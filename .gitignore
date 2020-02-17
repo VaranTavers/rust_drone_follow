@@ -1,0 +1,8 @@
+/target
+**/*.rs.bk
+*.png
+/videos
+tags
+/.idea
+follow.iml
+*.mp4
