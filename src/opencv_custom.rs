@@ -14,17 +14,33 @@ pub fn mat_size_of_other_cv_8u(mat: &Mat) -> Mat {
 }
 
 pub struct MyColor {
-    /// Ranges from 0 - 116
-    pub l: i8,
-    /// Ranges from -127 to 127
-    pub a: i8,
-    /// Ranges from -127 to 127
-    pub b: i8,
+    pub l: u8,
+    pub a: u8,
+    pub b: u8,
+}
+
+impl MyColor {
+    /// l: Ranges from 0 to 100
+    /// a: Ranges from -127 to 127
+    /// b: Ranges from -127 to 127
+    pub fn new(l: i8, a: i8, b: i8) -> MyColor {
+        let ll;
+        if l > 100 || l < 0 {
+            ll = 100;
+        } else {
+            ll = l as i32;
+        }
+        MyColor {
+            l: (ll * 255 / 100) as u8,
+            a: (a as i32 + 128) as u8, 
+            b: (b as i32 + 128) as u8, 
+        }
+    }
 }
 
 pub fn get_mask(img: &Mat, lower_c: &MyColor, upper_c: &MyColor) -> Mat {
-    let lower = Mat::from_slice::<i8>(&[lower_c.l, lower_c.a, lower_c.b]).unwrap();
-    let upper = Mat::from_slice::<i8>(&[upper_c.l, upper_c.a, upper_c.b]).unwrap();
+    let lower = Mat::from_slice::<u8>(&[lower_c.l, lower_c.a, lower_c.b]).unwrap();
+    let upper = Mat::from_slice::<u8>(&[upper_c.l, upper_c.a, upper_c.b]).unwrap();
 
     let mut mask: Mat = mat_size_of_other_cv_8u(&img);
 

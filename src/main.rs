@@ -24,8 +24,7 @@ use opencv_custom::MyColor;
 fn main() {
     let mut s = MainFrame::new(
         NaiveDetection::new(
-            (MyColor { l: 0, a: 20, b: -20},
-             MyColor { l: 116, a: 127, b: 90}),
+            (MyColor::new(0, 20, -20), MyColor::new(100, 127, 90)),
              80.0
         ),
         MockController::new("./video-1574588281.mp4"),
