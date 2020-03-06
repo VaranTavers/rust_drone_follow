@@ -5,12 +5,12 @@ use std::thread;
 use std::sync::mpsc::{self, Sender, Receiver};
 use std::collections::HashMap;
 
-pub struct VideoHandler {
+pub struct VideoExporter {
     join_handle: thread::JoinHandle<()>,
     command_sender: Sender<(String, Option<Mat>)>
 }
 
-fn video_handler_thread(rec: Receiver<(String, Option<Mat>)>) {
+fn video_exporter_thread(rec: Receiver<(String, Option<Mat>)>) {
     let mut video_writers: HashMap<String, VideoWriter> = HashMap::new();
 
     loop {
@@ -41,13 +41,13 @@ fn video_handler_thread(rec: Receiver<(String, Option<Mat>)>) {
     }
 }
 
-impl VideoHandler {
-    pub fn new() -> VideoHandler {
+impl VideoExporter {
+    pub fn new() -> VideoExporter {
         let (command_sender, receiver) = mpsc::channel();
         let join_handle = thread::spawn(move || {
-            video_handler_thread(receiver);
+            video_exporter_thread(receiver);
         });
-        VideoHandler {
+        VideoExporter {
             join_handle,
             command_sender
         }

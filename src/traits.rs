@@ -1,12 +1,26 @@
 use opencv as cv;
 use cv::core::*;
 
-pub trait Tracker {
+pub trait Detector {
     fn get_estimated_position(&self) -> Option<Point>;
 
     fn get_estimated_certainty(&self) -> f64;
 
-    fn estimate_new_position(&mut self, img: &Mat);
+    fn estimate_new_position(&mut self, img: &Mat, old_pos:Option<&Point>);
+
+    fn draw_on_image(&self, img: &mut Mat);
+}
+
+pub trait Filter {
+    fn estimate_new_position(&mut self, point: &Point);
+    
+    fn get_estimated_position(&self) -> Option<Point>;
+
+    fn get_estimated_position_for_detector(&self) -> Option<Point>;
+
+    fn get_estimated_certainty(&self) -> f64;
+
+    fn draw_on_image(&self, img: &mut Mat);
 }
 
 pub trait Controller {
@@ -32,4 +46,12 @@ pub trait Controller {
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
 
+}
+
+pub trait PointSystem {
+    fn get_center(&self) -> Point;
+
+    fn from_image_coords(&self, point: &Point) -> Point;
+    
+    fn to_image_coords(&self, point: &Point) -> Point;
 }

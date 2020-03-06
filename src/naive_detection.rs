@@ -4,32 +4,34 @@ use cv::prelude::*;
 use opencv::imgproc::{contour_area};
 
 use crate::opencv_custom::{MyColor, get_contour};
-use crate::traits::Tracker;
+use crate::traits::Detector;
 
 pub struct NaiveDetection {
+    lower_color: MyColor,
+    upper_color: MyColor,
+    lower_size: f64,
     point: Option<Point>,
     cert: f64,
 }
 
 impl NaiveDetection {
-    pub fn new() -> NaiveDetection {
+    pub fn new((lower_color, upper_color): (MyColor, MyColor), lower_size: f64) -> NaiveDetection {
         NaiveDetection {
+            lower_color,
+            upper_color,
+            lower_size,
             point: None,
             cert: 0.0
         }
     }
 }
 
-impl Tracker for NaiveDetection {
-    fn estimate_new_position(&mut self, img: &Mat) {
+impl Detector for NaiveDetection {
+    fn estimate_new_position(&mut self, img: &Mat, _old_pos: Option<&Point>) {
 
-        let contours = get_contour(img, &MyColor {
-            h: 160, s: 60, v: 30
-        }, &MyColor {
-            h: 170, s: 255, v: 170
-        });
+        let contours = get_contour(img, &self.lower_color, &self.upper_color);
 
-        let (point, _cert) = get_point_from_contours(&contours);
+        let (point, _cert) = get_point_from_contours(&contours, self.lower_size);
 
         self.point = point;
         self.cert = 1.0;
@@ -42,9 +44,13 @@ impl Tracker for NaiveDetection {
     fn get_estimated_certainty(&self) -> f64 {
         self.cert
     }
+
+    fn draw_on_image(&self, _img: &mut Mat) {
+        
+    }
 }
 
-fn get_point_from_contours(contours: &cv::types::VectorOfVectorOfPoint) -> (Option<Point>, u32) {
+fn get_point_from_contours(contours: &cv::types::VectorOfVectorOfPoint, lower_size: f64) -> (Option<Point>, u32) {
     let c_with_area = contours.iter()
         .map(|contour| (contour_area(&contour, false).unwrap(), contour))
         .collect::<Vec<(f64, cv::types::VectorOfPoint)>>();
@@ -58,7 +64,7 @@ fn get_point_from_contours(contours: &cv::types::VectorOfVectorOfPoint) -> (Opti
                 (acc_a, acc_c)
             });
 
-        if biggest_area > 80.0 {
+        if biggest_area > lower_size {
             match biggest {
                 Some(contour) => {
                     let (s_x, s_y) = contour.iter()
