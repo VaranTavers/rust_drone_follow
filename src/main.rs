@@ -3,22 +3,21 @@ mod text_exporter;
 mod opencv_custom;
 mod traits;
 
-// Detectors
-mod naive_detection;
-
-// Controllers
-mod mock_controller;
-
-// Point systems
-mod centralized;
+mod detectors;
+mod filters;
+mod controllers;
+mod point_systems;
 
 // Mainframe
 mod main_frame;
 
 use main_frame::MainFrame;
 
-use mock_controller::MockController;
-use naive_detection::NaiveDetection;
+use controllers::mock_controller::MockController;
+use detectors::naive_detection::NaiveDetection;
+use filters::no_filter::NoFilter;
+use point_systems::centralized::Centralized;
+
 use opencv_custom::MyColor;
 
 fn main() {
@@ -28,6 +27,7 @@ fn main() {
              80.0
         ),
         MockController::new("./video-1574588281.mp4"),
+        NoFilter::new(Centralized::new(640, 368)),
     );
 
     s.run();

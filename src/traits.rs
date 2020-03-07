@@ -21,6 +21,8 @@ pub trait Filter {
     fn get_estimated_certainty(&self) -> f64;
 
     fn draw_on_image(&self, img: &mut Mat);
+
+    fn get_difference_vector(&self) -> Option<Point>;
 }
 
 pub trait Controller {

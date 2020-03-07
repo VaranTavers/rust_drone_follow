@@ -48,7 +48,7 @@ impl TextExporter {
         }
     }
 
-    pub fn save_frame(&mut self, text_name: &str, text: String) {
+    pub fn save_row(&mut self, text_name: &str, text: String) {
         self.command_sender.send(
             (String::from(text_name), Some(text))
             ).unwrap();
