@@ -1,5 +1,10 @@
 use opencv::types::{VectorOfVec4f};
-use opencv::core::Point;
+use opencv::core::{Point, Mat, Scalar, no_array};
+use opencv::types::VectorOfVectorOfPoint;
+use opencv::highgui::imshow;
+
+use crate::image_processing::*;
+use opencv::imgproc::{draw_contours, LINE_8};
 
 #[derive(Clone)]
 pub struct LineEquation {
@@ -30,6 +35,30 @@ impl LineEquation {
         }
         ret_vec
     }
+}
+
+pub fn do_processing(img: &Mat, contours: &VectorOfVectorOfPoint) -> Vec<LineEquation> {
+    let mut new_img = mat_size_of_other(img);
+    draw_contours(&mut new_img,
+                    contours,
+                    -1,
+                    Scalar::new(255.0, 255.0, 255.0, 255.0),
+                    2,
+                    LINE_8,
+                    &no_array().unwrap(),
+                    0,
+                    Point::new(0,0)
+    ).unwrap();
+    let graymane = grayscale(&new_img);
+    let blurred = gaussian_blur_phase(&graymane);
+    let cannied = canny_phase(&blurred);
+    let canny_blur = gaussian_blur_phase(&cannied);
+
+    imshow("CB", &canny_blur);
+
+    let cpp_lines = hough_phase(&canny_blur);
+
+    LineEquation::from_vec_of_vec4f(&cpp_lines)
 }
 
 fn center_and_flip(width: usize, height: usize, line_eq: &LineEquation) -> LineEquation {

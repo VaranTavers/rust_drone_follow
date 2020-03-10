@@ -31,7 +31,6 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
 
     }
 
-
     pub fn run(&mut self) {
         let mut video_exporter = VideoExporter::new();
         let mut text_exporter = TextExporter::new();
@@ -40,8 +39,9 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
         loop {
             match video.read(&mut img) {
                 Ok(true) => {
-                    self.detector.estimate_new_position(&img, None);
-                    match self.detector.get_estimated_position() {
+                    let point_for_detector = self.filter.get_estimated_position_for_detector();
+                    self.detector.detect_new_position(&img, point_for_detector);
+                    match self.detector.get_detected_position() {
                         Some(p) => {
                             circle(&mut img, Point::new(p.x, p.y), 10,
                             Scalar::new(255.0, 0.0, 0.0, 255.0), 2, LINE_8, 1).unwrap();
@@ -54,6 +54,7 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
                         }
                     }
 
+                    self.detector.draw_on_image(&mut img);
                     video_exporter.save_frame("test.mp4", &img);
 
                     imshow("Image", &img).unwrap();

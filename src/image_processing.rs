@@ -46,7 +46,7 @@ pub fn canny_phase(image: &Mat) -> Mat {
 
 pub fn hough_phase(image: &Mat) -> VectorOfVec4f {
     let mut lines: VectorOfVec4f = VectorOfVec4f::new();
-    hough_lines_p(&image, &mut lines, 1.0, PI / 180.0, 100, 0.0, 5.0).unwrap();
+    hough_lines_p(&image, &mut lines, 1.0, PI / 180.0, 100, 20.0, 3.0).unwrap();
 
     lines
 }

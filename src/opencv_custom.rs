@@ -49,7 +49,7 @@ pub fn get_mask(img: &Mat, lower_c: &MyColor, upper_c: &MyColor) -> Mat {
     mask
 }
 
-pub fn get_contour(a: &Mat, lower_bound: &MyColor, upper_bound: &MyColor) -> cv::types::VectorOfVectorOfPoint {
+pub fn get_contours(a: &Mat, lower_bound: &MyColor, upper_bound: &MyColor) -> cv::types::VectorOfVectorOfPoint {
     let mut hsv = mat_size_of_other(a);
     cvt_color(a, &mut hsv, COLOR_BGR2Lab, 0).unwrap();
 
@@ -60,9 +60,6 @@ pub fn get_contour(a: &Mat, lower_bound: &MyColor, upper_bound: &MyColor) -> cv:
 
     cv::core::bitwise_and(&a, &a, &mut output, &mask).unwrap();
     cv::imgproc::threshold(&mask, &mut thresh, 40.0, 255.0, 0).unwrap();
-
-    imshow("Mask", &output).unwrap();
-    // im2,contours,hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
 
     let mut contours: cv::types::VectorOfVectorOfPoint = cv::prelude::Vector::new();
 

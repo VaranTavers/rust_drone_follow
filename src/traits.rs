@@ -2,11 +2,13 @@ use opencv as cv;
 use cv::core::*;
 
 pub trait Detector {
-    fn get_estimated_position(&self) -> Option<Point>;
+    fn get_detected_position(&self) -> Option<Point>;
 
-    fn get_estimated_certainty(&self) -> f64;
+    fn get_detected_angle(&self) -> Option<f64>;
 
-    fn estimate_new_position(&mut self, img: &Mat, old_pos:Option<&Point>);
+    fn get_detection_certainty(&self) -> f64;
+
+    fn detect_new_position(&mut self, img: &Mat, old_pos: Option<Point>);
 
     fn draw_on_image(&self, img: &mut Mat);
 }
