@@ -44,12 +44,12 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
                     match self.detector.get_detected_position() {
                         Some(p) => {
                             circle(&mut img, Point::new(p.x, p.y), 10,
-                            Scalar::new(255.0, 0.0, 0.0, 255.0), 2, LINE_8, 1).unwrap();
+                            Scalar::new(255.0, 0.0, 0.0, 255.0), 2, LINE_8, 0).unwrap();
                             text_exporter.save_row("det_rate.txt", String::from("1\n"));
                         }
                         _ => {
                             circle(&mut img, Point::new(5, 5), 10,
-                            Scalar::new(0.0, 0.0, 255.0, 255.0), 3, LINE_8, 1).unwrap();
+                            Scalar::new(0.0, 0.0, 255.0, 255.0), 3, LINE_8, 0).unwrap();
                             text_exporter.save_row("det_rate.txt", String::from("0\n"));
                         }
                     }
