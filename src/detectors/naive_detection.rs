@@ -188,14 +188,6 @@ fn get_closest_point_to_center_from_contour(c: &GeometricPoint, contour: &Vec<Ge
         })
 }
 
-fn get_distance_from_line(a: &GeometricPoint, b: &GeometricPoint, c: &GeometricPoint) -> f64 {
-    let eq_a = a.y - b.y;
-    let eq_b = a.x - b.x;
-    let eq_c = b.x * a.y - b.y * a.x;
-
-    (eq_a * c.x - eq_b * c.y + eq_c).abs() as f64 / ((eq_a.pow(2) + eq_b.pow(2)) as f64).sqrt()
-}
-
 fn get_biggest_contour(contours: &cv::types::VectorOfVectorOfPoint, lower_size: f64) -> Option<Vec<Point>> {
     let c_with_area = contours.iter()
         .map(|contour| (contour_area(&contour, false).unwrap(), contour))
