@@ -1,7 +1,32 @@
 use opencv as cv;
 use cv::core::*;
 use opencv::imgproc::{COLOR_BGR2Lab, cvt_color};
-use cv::highgui::*;
+use std::clone::Clone;
+
+/// A new type for points that ensures type-safety: No point in the image's coordinate system gets into
+/// calculations and no point from calculations gets used as an input to an OpenCV drawing function.
+pub struct GeometricPoint {
+    pub x: i32,
+    pub y: i32
+}
+
+impl Clone for GeometricPoint {
+    fn clone(&self) -> Self {
+        GeometricPoint {
+            x: self.x,
+            y: self.y,
+        }
+    }
+}
+
+impl GeometricPoint {
+    pub fn new(x: i32, y: i32) -> GeometricPoint {
+        GeometricPoint { x, y }
+    }
+    pub fn d(&self) -> f64 {
+        ((self.x.pow(2) + self.y.pow(2)) as f64).sqrt()
+    }
+}
 
 pub fn mat_size_of_other(mat: &Mat) -> Mat {
     Mat::zeros_size(mat.size().unwrap(), mat.typ().unwrap())

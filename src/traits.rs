@@ -1,8 +1,9 @@
 use opencv as cv;
 use cv::core::*;
+use crate::opencv_custom::GeometricPoint;
 
 pub trait Detector {
-    fn get_detected_position(&self) -> Option<Point>;
+    fn get_detected_position(&self) -> Option<GeometricPoint>;
 
     fn get_detected_angle(&self) -> Option<f64>;
 
@@ -14,9 +15,9 @@ pub trait Detector {
 }
 
 pub trait Filter {
-    fn estimate_new_position(&mut self, point: &Point);
+    fn estimate_new_position(&mut self, point: &GeometricPoint);
     
-    fn get_estimated_position(&self) -> Option<Point>;
+    fn get_estimated_position(&self) -> Option<GeometricPoint>;
 
     fn get_estimated_position_for_detector(&self) -> Option<Point>;
 
@@ -24,7 +25,7 @@ pub trait Filter {
 
     fn draw_on_image(&self, img: &mut Mat);
 
-    fn get_difference_vector(&self) -> Option<Point>;
+    fn get_difference_vector(&self) -> Option<GeometricPoint>;
 }
 
 pub trait Controller {
@@ -53,9 +54,9 @@ pub trait Controller {
 }
 
 pub trait PointSystem {
-    fn get_center(&self) -> Point;
+    fn get_center(&self) -> GeometricPoint;
 
-    fn from_image_coords(&self, point: &Point) -> Point;
+    fn convert_from_image_coords(&self, point: &Point) -> GeometricPoint;
     
-    fn to_image_coords(&self, point: &Point) -> Point;
+    fn convert_to_image_coords(&self, point: &GeometricPoint) -> Point;
 }

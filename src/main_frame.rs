@@ -41,19 +41,6 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
                 Ok(true) => {
                     let point_for_detector = self.filter.get_estimated_position_for_detector();
                     self.detector.detect_new_position(&img, point_for_detector);
-                    match self.detector.get_detected_position() {
-                        Some(p) => {
-                            circle(&mut img, Point::new(p.x, p.y), 10,
-                            Scalar::new(255.0, 0.0, 0.0, 255.0), 2, LINE_8, 0).unwrap();
-                            text_exporter.save_row("det_rate.txt", String::from("1\n"));
-                        }
-                        _ => {
-                            circle(&mut img, Point::new(5, 5), 10,
-                            Scalar::new(0.0, 0.0, 255.0, 255.0), 3, LINE_8, 0).unwrap();
-                            text_exporter.save_row("det_rate.txt", String::from("0\n"));
-                        }
-                    }
-
                     self.detector.draw_on_image(&mut img);
                     video_exporter.save_frame("test.mp4", &img);
 
