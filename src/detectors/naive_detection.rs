@@ -158,21 +158,16 @@ impl Detector for NaiveDetection {
 
 /// Gets the two closest points to the center of the hat, which are at least a constant far away from
 /// eachother.
-/// This is done by finding the closest point (A) and then finding the second point (B) so that
-/// the center point (C) is the closest to the AB line
+/// This is done by finding the closest point (A) then calculating it's symmetric (A') in regards of the
+/// center point (C), and then finding the closest point to A'.
 fn get_points_from_two_sides(center_point: &GeometricPoint, contour: &Vec<GeometricPoint>) -> (GeometricPoint, GeometricPoint) {
     let (closest_point, _d) = get_closest_point_to_center_from_contour(center_point, contour);
 
-    let (other_point, d) = contour.iter()
-        .fold((GeometricPoint::new(0, 0), 500000.0), |(other_point, d), current_point| {
-            let dist = get_distance_from_line(&closest_point, current_point, center_point);
-            if dist < d {
-                return (current_point.clone(), dist);
-            }
-            (other_point, d)
-        });
+    let symmetric_to_center = GeometricPoint::new(center_point.x * 2 - closest_point.x, center_point.y * 2 - closest_point.y);
 
-    if d > 10.0 {
+    let (other_point, d) = get_closest_point_to_center_from_contour(&symmetric_to_center, contour);
+
+    if d > 100 {
         println!("a ({}, {}), b ({}, {}), c ({}, {}), d = {}", closest_point.x, closest_point.y, other_point.x, other_point.y, center_point.x, center_point.y, d);
         cv::highgui::wait_key(100000);
     }
@@ -191,14 +186,6 @@ fn get_closest_point_to_center_from_contour(c: &GeometricPoint, contour: &Vec<Ge
             }
             (p, d)
         })
-}
-
-fn get_distance_from_line(a: &GeometricPoint, b: &GeometricPoint, c: &GeometricPoint) -> f64 {
-    let eq_a = a.y - b.y;
-    let eq_b = a.x - b.x;
-    let eq_c = b.x * a.y - b.y * a.x;
-
-    (eq_a * c.x - eq_b * c.y + eq_c).abs() as f64 / ((eq_a.pow(2) + eq_b.pow(2)) as f64).sqrt()
 }
 
 fn get_biggest_contour(contours: &cv::types::VectorOfVectorOfPoint, lower_size: f64) -> Option<Vec<Point>> {
