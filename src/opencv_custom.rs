@@ -1,6 +1,6 @@
 use opencv as cv;
 use cv::core::*;
-use opencv::imgproc::{COLOR_BGR2Lab, cvt_color};
+use opencv::imgproc::{COLOR_BGR2Lab, cvt_color, LINE_8, line};
 use std::clone::Clone;
 
 /// A new type for points that ensures type-safety: No point in the image's coordinate system gets into
@@ -94,4 +94,20 @@ pub fn get_contours(a: &Mat, lower_bound: &MyColor, upper_bound: &MyColor) -> cv
                                Point::new(0, 0)).unwrap();
 
     contours
+}
+
+pub fn line_c (img: &mut Mat, a: &Point, b: &Point, color: Scalar) {
+    line(img, a.clone(), b.clone(), color, 2, LINE_8, 0).unwrap();
+}
+
+pub fn get_red()-> Scalar {
+    Scalar::new(0.0, 0.0, 255.0, 255.0)
+}
+
+pub fn get_blue()-> Scalar {
+    Scalar::new(255.0, 0.0, 0.0, 255.0)
+}
+
+pub fn get_green()-> Scalar {
+    Scalar::new(0.0, 255.0, 0.0, 255.0)
 }

@@ -3,9 +3,11 @@ use cv::core::*;
 use cv::prelude::*;
 use opencv::imgproc::{contour_area, line, LINE_8, circle};
 
-use crate::opencv_custom::{MyColor, get_contours, GeometricPoint};
+use crate::opencv_custom::{MyColor, get_contours, GeometricPoint, line_c, get_red, get_green};
 use crate::traits::{Detector, PointSystem};
 use crate::point_systems::centralized::Centralized;
+use crate::hat::Hat;
+use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
 
 const PI: f64 = std::f64::consts::PI;
 
@@ -15,42 +17,38 @@ enum TanableAngle {
 }
 
 pub struct NaiveDetection {
-    lower_color: MyColor,
-    upper_color: MyColor,
-    lower_size: f64,
     point: Option<GeometricPoint>,
     cert: f64,
     angle: TanableAngle,
+    hat: Hat,
     /// Debug
-    tmp_points: (Point, Point),
+    hat_side_points: (GeometricPoint, GeometricPoint),
     cent: Centralized,
 }
 
 impl NaiveDetection {
-    pub fn new((lower_color, upper_color): (MyColor, MyColor), lower_size: f64) -> NaiveDetection {
+    pub fn new(hat: Hat, cent: Centralized) -> NaiveDetection {
         NaiveDetection {
-            lower_color,
-            upper_color,
-            lower_size,
             point: None,
             cert: 0.0,
             angle: TanableAngle::Angle(0.0),
-            tmp_points: (Point::new(0, 0), Point::new(0, 0)),
-            cent: Centralized::new(640, 368),
+            hat_side_points: (GeometricPoint::new(0, 0), GeometricPoint::new(0, 0)),
+            cent,
+            hat
         }
     }
 
     fn get_angle(&mut self, center_point: &GeometricPoint, contour: &Vec<GeometricPoint>) -> TanableAngle {
         let (a, b) = get_points_from_two_sides(center_point, contour);
+        let d = a.y - b.y;
+        let m = d as f64 / (a.x - b.x) as f64;
 
-        let p_a = self.cent.convert_to_image_coords(&a);
-        let p_b = self.cent.convert_to_image_coords(&b);
-        self.tmp_points = (p_a, p_b);
-        if a.y == b.y {
+        // Debug
+        self.hat_side_points = (a, b);
+        if d == 0 {
             return TanableAngle::Vertical;
         }
 
-        let m = (a.y - b.y) as f64 / (a.x - b.x) as f64;
         TanableAngle::Angle((1.0 / m).atan())
     }
 }
@@ -76,33 +74,24 @@ impl Detector for NaiveDetection {
     }
 
     fn detect_new_position(&mut self, img: &Mat, _old_pos: Option<Point>) {
-        let contours = get_contours(img, &self.lower_color, &self.upper_color);
-
-        let contour_option = get_biggest_contour(&contours, self.lower_size);
+        let contours = get_contours(img, &self.hat.color_low, &self.hat.color_high);
+        let contour_option = get_best_fit_contour(&contours, self.hat.size_avg);
 
         match contour_option {
-            Some(contour) => {
+            Some((contour, cert)) => {
                 let contour_cent = contour
                     .iter()
                     .map(|p| self.cent.convert_from_image_coords(p))
                     .collect::<Vec<GeometricPoint>>();
 
-                let (s_x, s_y) = contour_cent
-                    .iter()
-                    .fold((0, 0), |(a_x, a_y), p| (a_x + p.x, a_y + p.y));
-                let l = contour.len();
-                let (c_x, c_y) = (s_x / (l as i32), s_y / (l as i32));
+                let center = get_center_of_contour(&contour_cent);
 
-                let angle= self.get_angle(&GeometricPoint::new(c_x, c_y), &contour_cent);
-
-                self.point = Some(GeometricPoint::new(c_x, c_y));
-                self.cert = 1.0;
-                self.angle = angle;
+                self.cert = cert;
+                self.angle = self.get_angle(&center, &contour_cent);
+                self.point = Some(center);
             }
             None => {
-                self.point = None;
-                self.cert = 1.0;
-                self.angle = TanableAngle::Angle(0.0);
+                self.cert = 0.0;
             }
         }
     }
@@ -112,40 +101,25 @@ impl Detector for NaiveDetection {
         match &self.point {
             Some(p) => {
                 let c_point = self.cent.convert_to_image_coords(&p);
-                let other_point;
-                match self.angle {
+                let other_point = match self.angle {
                     TanableAngle::Angle(angle) => {
-                        let tan_angle = angle.tan();
-                        other_point = Point::new(c_point.x + k, c_point.y + (k as f64 * tan_angle) as i32);
+                        Point::new(c_point.x + k, c_point.y + (k as f64 * angle.tan()) as i32)
                     }
                     TanableAngle::Vertical => {
-                        other_point = Point::new(c_point.x, c_point.y - k);
+                        Point::new(c_point.x, c_point.y - k)
                     }
-                }
+                };
 
-                line(img,
-                     c_point,
-                     other_point,
-                     Scalar::new(0.0, 0.0, 255.0, 255.0),
-                     2, LINE_8, 0).unwrap();
+                line_c(img,&c_point, &other_point, get_red());
 
-                let (closest, other) = self.tmp_points;
-                circle(img,
-                       closest.clone(),
-                       5,
-                       Scalar::new(0.0, 100.0, 0.0, 255.0),
-                       2,
-                       LINE_8,
-                       0).unwrap();
-                line(img,
-                     closest.clone(),
-                     other.clone(),
-                     Scalar::new(0.0, 255.0, 0.0, 255.0),
-                     2, LINE_8, 0).unwrap();
+                let (cgp, ogp) = &self.hat_side_points;
+                let (closest, other) = (self.cent.convert_to_image_coords(cgp), self.cent.convert_to_image_coords(ogp));
+                circle(img, closest.clone(), 5, Scalar::new(0.0, 100.0, 0.0, 255.0), 2, LINE_8, 0).unwrap();
+                line_c(img, &closest, &other, get_green());
                 circle(img,
                        other.clone(),
                        5,
-                       Scalar::new(0.0, 255.0, 0.0, 255.0),
+                       get_green(),
                        2,
                        LINE_8,
                        0).unwrap();
@@ -162,25 +136,16 @@ impl Detector for NaiveDetection {
 /// center point (C), and then finding the closest point to A'.
 fn get_points_from_two_sides(center_point: &GeometricPoint, contour: &Vec<GeometricPoint>) -> (GeometricPoint, GeometricPoint) {
     let (closest_point, _d) = get_closest_point_to_center_from_contour(center_point, contour);
-
     let symmetric_to_center = GeometricPoint::new(center_point.x * 2 - closest_point.x, center_point.y * 2 - closest_point.y);
-
     let (other_point, d) = get_closest_point_to_center_from_contour(&symmetric_to_center, contour);
 
-    if d > 100 {
-        println!("a ({}, {}), b ({}, {}), c ({}, {}), d = {}", closest_point.x, closest_point.y, other_point.x, other_point.y, center_point.x, center_point.y, d);
-        cv::highgui::wait_key(100000);
-    }
-    println!("d: {}, {} {}", d, closest_point.x, closest_point.y);
     (closest_point, other_point)
 }
 
 fn get_closest_point_to_center_from_contour(c: &GeometricPoint, contour: &Vec<GeometricPoint>) -> (GeometricPoint, i32) {
     contour.iter()
         .fold((GeometricPoint::new(0, 0), 5000000), |(p, d), c_p| {
-            let dist_x = c.x - c_p.x;
-            let dist_y = c.y - c_p.y;
-            let dist_sq = dist_x.pow(2) + dist_y.pow(2);
+            let dist_sq = (c.x - c_p.x).pow(2) + (c.y - c_p.y).pow(2);
             if dist_sq < d {
                 return (c_p.clone(), dist_sq);
             }
@@ -188,37 +153,34 @@ fn get_closest_point_to_center_from_contour(c: &GeometricPoint, contour: &Vec<Ge
         })
 }
 
-fn get_biggest_contour(contours: &cv::types::VectorOfVectorOfPoint, lower_size: f64) -> Option<Vec<Point>> {
+fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f64) -> Option<(Vec<Point>, f64)> {
     let c_with_area = contours.iter()
         .map(|contour| (contour_area(&contour, false).unwrap(), contour))
-        .collect::<Vec<(f64, cv::types::VectorOfPoint)>>();
+        .collect::<Vec<(f64, VectorOfPoint)>>();
+    let (_, best_fit_area_diff, best_fit) = get_contour_with_closest_area_to(&c_with_area, size_avg);
 
-    if contours.len() > 0 {
-        let (biggest_area, biggest) = c_with_area.iter()
-            .fold((-1.0, None), |(acc_a, acc_c), (c_a, c_c)| {
-                if *c_a > acc_a {
-                    return (*c_a, Some(c_c));
-                }
-                (acc_a, acc_c)
-            });
+    best_fit.map(|contour| {
+        let l = contour.iter()
+            .map(|p| Point::new(p.x, p.y))
+            .collect::<Vec<Point>>();
+        (l, (500.0 / best_fit_area_diff).min(1.0))
+    })
+}
 
-        if biggest_area > lower_size {
-            match biggest {
-                Some(contour) => {
-                    let mut ret = Vec::new();
-                    let _ = contour.iter()
-                        .fold(0, |_, c_p| {
-                            ret.push(Point::new(c_p.x, c_p.y));
-                            0
-                        });
-                    return Some(ret);
-                }
-                _ => {
-
-                }
+fn get_contour_with_closest_area_to(c_with_area: &Vec<(f64, VectorOfPoint)>, size_avg: f64) -> (f64, f64, Option<&VectorOfPoint>) {
+    c_with_area.iter()
+        .fold((-1.0, 500000.0, None), |(acc_a, acc_a_diff, acc_c), (c_a, c_c)| {
+            if (size_avg - *c_a).abs() < acc_a_diff {
+                return (*c_a, (size_avg - *c_a).abs(), Some(c_c));
             }
-        }
-    }
+            (acc_a, acc_a_diff, acc_c)
+        })
+}
 
-    None
+fn get_center_of_contour(contour: &Vec<GeometricPoint>) -> GeometricPoint {
+    let (s_x, s_y) = contour_cent
+        .iter()
+        .fold((0, 0), |(a_x, a_y), p| (a_x + p.x, a_y + p.y));
+    let l = contour.len();
+    GeometricPoint::new(s_x / (l as i32), s_y / (l as i32))
 }
