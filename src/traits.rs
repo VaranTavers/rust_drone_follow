@@ -1,6 +1,7 @@
 use opencv as cv;
 use cv::core::*;
 use crate::geometric_point::GeometricPoint;
+use crate::point_converter::PointConverter;
 
 pub trait Detector {
     fn get_detected_position(&self) -> Option<GeometricPoint>;
@@ -9,23 +10,32 @@ pub trait Detector {
 
     fn get_detection_certainty(&self) -> f64;
 
-    fn detect_new_position(&mut self, img: &Mat, old_pos: Option<Point>);
+    fn detect_new_position(&mut self, img: &Mat, old_pos: Option<Point>, p_c: &PointConverter);
 
-    fn draw_on_image(&self, img: &mut Mat);
+    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
 }
 
 pub trait Filter {
-    fn estimate_new_position(&mut self, point: &GeometricPoint);
-    
+    /// Updates the estimation based on new information.
+    fn update_estimation(&mut self, point: &GeometricPoint, angle: f64, cert: f64);
+
+    /// Returns the estimated position of the hat.
     fn get_estimated_position(&self) -> Option<GeometricPoint>;
 
-    fn get_estimated_position_for_detector(&self) -> Option<Point>;
+    /// Returns the estimated angle of the hat.
+    fn get_estimated_angle(&self) -> f64;
 
-    fn get_estimated_certainty(&self) -> f64;
+    /// Returns the estimated horizontal speed of the hat.
+    fn get_estimated_vx(&self) -> f64;
 
-    fn draw_on_image(&self, img: &mut Mat);
+    /// Returns the estimated vertical speed of the hat.
+    fn get_estimated_vy(&self) -> f64;
 
-    fn get_difference_vector(&self) -> Option<GeometricPoint>;
+    /// Returns the certainty of the estimation.
+    fn get_estimation_certainty(&self) -> f64;
+
+    /// Returns the certainty of the estimation.
+    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
 }
 
 pub trait Controller {
@@ -57,12 +67,4 @@ pub trait Controller {
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
 
-}
-
-pub trait PointSystem {
-    fn get_center(&self) -> GeometricPoint;
-
-    fn convert_from_image_coords(&self, point: &Point) -> GeometricPoint;
-    
-    fn convert_to_image_coords(&self, point: &GeometricPoint) -> Point;
 }

@@ -2,13 +2,13 @@ use opencv as cv;
 use cv::core::*;
 use cv::prelude::*;
 use opencv::imgproc::{contour_area, line, LINE_8, circle};
+use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
 
 use crate::opencv_custom::{MyColor, get_contours, line_c, get_red, get_green};
-use crate::traits::{Detector, PointSystem};
-use crate::point_systems::centralized::Centralized;
-use crate::hat::Hat;
-use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
+use crate::traits::{Detector};
 use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
+use crate::point_converter::PointConverter;
+use crate::hat::Hat;
 
 const PI: f64 = std::f64::consts::PI;
 
@@ -24,17 +24,15 @@ pub struct NaiveDetection {
     hat: Hat,
     /// Debug
     hat_side_points: (GeometricPoint, GeometricPoint),
-    cent: Centralized,
 }
 
 impl NaiveDetection {
-    pub fn new(hat: Hat, cent: Centralized) -> NaiveDetection {
+    pub fn new(hat: Hat) -> NaiveDetection {
         NaiveDetection {
             point: None,
             cert: 0.0,
             angle: TanableAngle::Angle(0.0),
             hat_side_points: (GeometricPoint::new(0, 0), GeometricPoint::new(0, 0)),
-            cent,
             hat
         }
     }
@@ -74,7 +72,7 @@ impl Detector for NaiveDetection {
         self.cert
     }
 
-    fn detect_new_position(&mut self, img: &Mat, _old_pos: Option<Point>) {
+    fn detect_new_position(&mut self, img: &Mat, _old_pos: Option<Point>, p_c: &PointConverter) {
         let contours = get_contours(img, &self.hat.color_low, &self.hat.color_high);
         let contour_option = get_best_fit_contour(&contours, self.hat.size_avg);
 
@@ -82,7 +80,7 @@ impl Detector for NaiveDetection {
             Some((contour, cert)) => {
                 let contour_cent = contour
                     .iter()
-                    .map(|p| self.cent.convert_from_image_coords(p))
+                    .map(|p| p_c.convert_from_image_coords(p))
                     .collect::<Vec<GeometricPoint>>();
 
                 let center = get_center_of_geometric_points(&contour_cent);
@@ -97,11 +95,11 @@ impl Detector for NaiveDetection {
         }
     }
 
-    fn draw_on_image(&self, img: &mut Mat) {
+    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter) {
         let k = 100;
         match &self.point {
             Some(p) => {
-                let c_point = self.cent.convert_to_image_coords(&p);
+                let c_point = p_c.convert_to_image_coords(&p);
                 let other_point = match self.angle {
                     TanableAngle::Angle(angle) => {
                         Point::new(c_point.x + k, c_point.y + (k as f64 * angle.tan()) as i32)
@@ -114,7 +112,7 @@ impl Detector for NaiveDetection {
                 line_c(img,&c_point, &other_point, get_red());
 
                 let (cgp, ogp) = &self.hat_side_points;
-                let (closest, other) = (self.cent.convert_to_image_coords(cgp), self.cent.convert_to_image_coords(ogp));
+                let (closest, other) = (p_c.convert_to_image_coords(cgp), p_c.convert_to_image_coords(ogp));
                 circle(img, closest.clone(), 5, Scalar::new(0.0, 100.0, 0.0, 255.0), 2, LINE_8, 0).unwrap();
                 line_c(img, &closest, &other, get_green());
                 circle(img,
@@ -138,7 +136,7 @@ impl Detector for NaiveDetection {
 fn get_points_from_two_sides(center_point: &GeometricPoint, contour: &Vec<GeometricPoint>) -> (GeometricPoint, GeometricPoint) {
     let (closest_point, _d) = get_closest_from_geometric_points_to_point(contour,center_point);
     let symmetric_to_center = GeometricPoint::new(center_point.x * 2 - closest_point.x, center_point.y * 2 - closest_point.y);
-    let (other_point, d) = get_closest_from_geometric_points_to_point(contour, &symmetric_to_center);
+    let (other_point, _d) = get_closest_from_geometric_points_to_point(contour, &symmetric_to_center);
 
     (closest_point, other_point)
 }
