@@ -2,7 +2,7 @@ use opencv as cv;
 
 use cv::core::*;
 use crate::traits::{Filter, PointSystem};
-use crate::opencv_custom::GeometricPoint;
+use crate::geometric_point::GeometricPoint;
 
 pub struct NoFilter<P: PointSystem> {
     point_system: P,

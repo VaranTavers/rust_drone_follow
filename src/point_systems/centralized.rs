@@ -2,7 +2,7 @@ use opencv as cv;
 use cv::core::*;
 
 use crate::traits::PointSystem;
-use crate::opencv_custom::GeometricPoint;
+use crate::geometric_point::GeometricPoint;
 
 pub struct Centralized {
     width: usize,
@@ -47,6 +47,7 @@ mod tests {
     use crate::traits::PointSystem;
     use crate::opencv_custom::GeometricPoint;
     use opencv::core::Point;
+    use crate::geometric_point::GeometricPoint;
 
     #[test]
     fn center_x_should_be_zero() {

@@ -1,5 +1,6 @@
 mod video_exporter;
 mod text_exporter;
+mod geometric_point;
 mod opencv_custom;
 mod traits;
 

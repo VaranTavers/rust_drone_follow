@@ -1,6 +1,6 @@
 use opencv as cv;
 use cv::core::*;
-use crate::opencv_custom::GeometricPoint;
+use crate::geometric_point::GeometricPoint;
 
 pub trait Detector {
     fn get_detected_position(&self) -> Option<GeometricPoint>;
@@ -47,6 +47,12 @@ pub trait Controller {
 
     /// Should return height in cm-s
     fn get_height(&self) -> f64;
+
+    /// Should return the video's height in pixels
+    fn get_video_height(&self) -> usize;
+
+    /// Should return the video's width in pixels
+    fn get_video_width(&self) -> usize;
 
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;

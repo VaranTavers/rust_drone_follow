@@ -49,4 +49,12 @@ impl Controller for MockController {
     fn get_opencv_url(&self) -> String {
         self.filename.clone()
     }
+
+    fn get_video_height(&self) -> usize {
+        348
+    }
+
+    fn get_video_width(&self) -> usize {
+        640
+    }
 }

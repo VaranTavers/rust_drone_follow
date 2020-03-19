@@ -3,11 +3,12 @@ use cv::core::*;
 use cv::prelude::*;
 use opencv::imgproc::{contour_area, line, LINE_8, circle};
 
-use crate::opencv_custom::{MyColor, get_contours, GeometricPoint, line_c, get_red, get_green};
+use crate::opencv_custom::{MyColor, get_contours, line_c, get_red, get_green};
 use crate::traits::{Detector, PointSystem};
 use crate::point_systems::centralized::Centralized;
 use crate::hat::Hat;
 use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
+use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
 
 const PI: f64 = std::f64::consts::PI;
 
@@ -84,7 +85,7 @@ impl Detector for NaiveDetection {
                     .map(|p| self.cent.convert_from_image_coords(p))
                     .collect::<Vec<GeometricPoint>>();
 
-                let center = get_center_of_contour(&contour_cent);
+                let center = get_center_of_geometric_points(&contour_cent);
 
                 self.cert = cert;
                 self.angle = self.get_angle(&center, &contour_cent);
@@ -135,22 +136,11 @@ impl Detector for NaiveDetection {
 /// This is done by finding the closest point (A) then calculating it's symmetric (A') in regards of the
 /// center point (C), and then finding the closest point to A'.
 fn get_points_from_two_sides(center_point: &GeometricPoint, contour: &Vec<GeometricPoint>) -> (GeometricPoint, GeometricPoint) {
-    let (closest_point, _d) = get_closest_point_to_center_from_contour(center_point, contour);
+    let (closest_point, _d) = get_closest_from_geometric_points_to_point(contour,center_point);
     let symmetric_to_center = GeometricPoint::new(center_point.x * 2 - closest_point.x, center_point.y * 2 - closest_point.y);
-    let (other_point, d) = get_closest_point_to_center_from_contour(&symmetric_to_center, contour);
+    let (other_point, d) = get_closest_from_geometric_points_to_point(contour, &symmetric_to_center);
 
     (closest_point, other_point)
-}
-
-fn get_closest_point_to_center_from_contour(c: &GeometricPoint, contour: &Vec<GeometricPoint>) -> (GeometricPoint, i32) {
-    contour.iter()
-        .fold((GeometricPoint::new(0, 0), 5000000), |(p, d), c_p| {
-            let dist_sq = (c.x - c_p.x).pow(2) + (c.y - c_p.y).pow(2);
-            if dist_sq < d {
-                return (c_p.clone(), dist_sq);
-            }
-            (p, d)
-        })
 }
 
 fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f64) -> Option<(Vec<Point>, f64)> {
@@ -167,20 +157,14 @@ fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f
     })
 }
 
+/// The area returned has to be at least half of the expected one
 fn get_contour_with_closest_area_to(c_with_area: &Vec<(f64, VectorOfPoint)>, size_avg: f64) -> (f64, f64, Option<&VectorOfPoint>) {
     c_with_area.iter()
         .fold((-1.0, 500000.0, None), |(acc_a, acc_a_diff, acc_c), (c_a, c_c)| {
-            if (size_avg - *c_a).abs() < acc_a_diff {
+            if *c_a >= size_avg / 2.0 && (size_avg - *c_a).abs() < acc_a_diff {
                 return (*c_a, (size_avg - *c_a).abs(), Some(c_c));
             }
             (acc_a, acc_a_diff, acc_c)
         })
 }
 
-fn get_center_of_contour(contour: &Vec<GeometricPoint>) -> GeometricPoint {
-    let (s_x, s_y) = contour_cent
-        .iter()
-        .fold((0, 0), |(a_x, a_y), p| (a_x + p.x, a_y + p.y));
-    let l = contour.len();
-    GeometricPoint::new(s_x / (l as i32), s_y / (l as i32))
-}
