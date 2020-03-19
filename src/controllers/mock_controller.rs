@@ -23,6 +23,8 @@ impl Controller for MockController {
     fn land(&mut self) {
     }
 
+    fn move_all(&mut self, _left_right: f64, _back_front: f64, _down_up: f64, _turn_left_right: f64) {
+    }
     fn move_forward(&mut self, _speed: f64) {
     }
     fn move_backward(&mut self, _speed: f64) {

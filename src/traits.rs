@@ -45,6 +45,9 @@ pub trait Controller {
     fn takeoff(&mut self);
     fn land(&mut self);
 
+    /// Negative values ([-1.0, 0.0)) mean going towards the first direction, positive values
+    /// ((0.0, 1.0])) mean going towards the second direction.
+    fn move_all(&mut self, left_right: f64, back_front: f64, down_up: f64, turn_left_right: f64);
     fn move_forward(&mut self, speed: f64);
     fn move_backward(&mut self, speed: f64);
     fn move_left(&mut self, speed: f64);
