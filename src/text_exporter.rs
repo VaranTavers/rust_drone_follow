@@ -53,8 +53,10 @@ impl TextExporter {
             (String::from(text_name), Some(text))
             ).unwrap();
     }
+}
 
-    pub fn close(self) {
+impl Drop for TextExporter {
+    fn drop(&mut self) {
         self.command_sender.send((String::new(), None)).unwrap();
         self.join_handle.join().unwrap();
     }

@@ -80,8 +80,6 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
             }
         }
 
-        video_exporter.close(); 
-        text_exporter.close(); 
         self.controller.land();
         self.controller.shutdown();
     }
