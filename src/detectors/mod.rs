@@ -1,1 +1,1 @@
-pub mod naive_detection;
+pub mod naive_detector;

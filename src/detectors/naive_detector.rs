@@ -4,7 +4,7 @@ use cv::prelude::*;
 use opencv::imgproc::{contour_area, line, LINE_8, circle};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
 
-use crate::opencv_custom::{MyColor, get_contours, line_c, get_red, get_green};
+use crate::opencv_custom::{LabColor, get_contours, line_c, get_red, get_green};
 use crate::traits::{Detector};
 use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
 use crate::point_converter::PointConverter;
@@ -17,7 +17,15 @@ enum TanableAngle {
     Angle(f64)
 }
 
-pub struct NaiveDetection {
+/// This is the most basic detection this library offers. It basically searches for the things in
+/// the given color range, closest in size to the given size (with a maximum difference of 50%)
+/// and it calculates it's central point by averaging all the points of the contour of the object
+/// the angle by calculating it's sides and calculating the line's, which connects them, normal.
+///
+/// This angle will always be between -pi/2 and pi/2.
+///
+/// This Detector doesn't take into account previous coordinates of the tracked object.
+pub struct NaiveDetector {
     point: Option<GeometricPoint>,
     cert: f64,
     angle: TanableAngle,
@@ -26,9 +34,11 @@ pub struct NaiveDetection {
     hat_side_points: (GeometricPoint, GeometricPoint),
 }
 
-impl NaiveDetection {
-    pub fn new(hat: Hat) -> NaiveDetection {
-        NaiveDetection {
+impl NaiveDetector {
+    /// Requires a Hat given to it, which contains the information about the hat that the detector
+    /// is looking for.
+    pub fn new(hat: Hat) -> NaiveDetector {
+        NaiveDetector {
             point: None,
             cert: 0.0,
             angle: TanableAngle::Angle(0.0),
@@ -52,7 +62,7 @@ impl NaiveDetection {
     }
 }
 
-impl Detector for NaiveDetection {
+impl Detector for NaiveDetector {
     fn get_detected_position(&self) -> Option<GeometricPoint> {
         self.point.as_ref().map(|a| a.clone())
     }
@@ -72,6 +82,8 @@ impl Detector for NaiveDetection {
         self.cert
     }
 
+    /// Call this for every frame you want to use the detector for. It recalculates the position,
+    /// angle and certainty.
     fn detect_new_position(&mut self, img: &Mat, _old_pos: Option<Point>, p_c: &PointConverter) {
         let contours = get_contours(img, &self.hat.color_low, &self.hat.color_high);
         let contour_option = get_best_fit_contour(&contours, self.hat.size_avg);
@@ -95,6 +107,7 @@ impl Detector for NaiveDetection {
         }
     }
 
+    /// Call this only if you want to visualize the detected points, and the angle.
     fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter) {
         let k = 100;
         match &self.point {
@@ -155,7 +168,7 @@ fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f
     })
 }
 
-/// The area returned has to be at least half of the expected one
+/// The area can only differ with a maximum of 50%
 fn get_contour_with_closest_area_to(c_with_area: &Vec<(f64, VectorOfPoint)>, size_avg: f64) -> (f64, f64, Option<&VectorOfPoint>) {
     c_with_area.iter()
         .fold((-1.0, 500000.0, None), |(acc_a, acc_a_diff, acc_c), (c_a, c_c)| {

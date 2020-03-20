@@ -18,17 +18,17 @@ mod main_frame;
 use main_frame::MainFrame;
 
 use controllers::mock_controller::MockController;
-use detectors::naive_detection::NaiveDetection;
+use detectors::naive_detector::NaiveDetector;
 use filters::no_filter::NoFilter;
 
-use opencv_custom::MyColor;
+use opencv_custom::LabColor;
 use crate::hat::Hat;
 
 fn main() {
     let (filename, hat) = hat_file_reader::read_file("kek.hat");
     let mut s = MainFrame::new(
-        NaiveDetection::new(hat),
-        MockController::new(filename.as_str()),
+        NaiveDetector::new(hat),
+        MockController::new(filename.as_str(), 1280, 720),
         NoFilter::new(),
     );
 

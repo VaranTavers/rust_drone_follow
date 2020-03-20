@@ -5,6 +5,8 @@ use crate::traits::{Filter};
 use crate::geometric_point::GeometricPoint;
 use crate::point_converter::PointConverter;
 
+/// This is a filler Filter it doesn't calculate any new data (except for vx, vy) and doesn't modify
+/// old data in any meaningful way. It passes forward the data it has got from the detector.
 pub struct NoFilter {
     point: Option<GeometricPoint>,
     angle: f64,
@@ -14,6 +16,7 @@ pub struct NoFilter {
 }
 
 impl NoFilter {
+    /// NoFilter doesn't need any parameters since it doesn't do any calculations.
     pub fn new() -> NoFilter {
        NoFilter {
            point: None,
@@ -26,7 +29,8 @@ impl NoFilter {
 }
 
 impl Filter for NoFilter {
-    /// Simply copies the estimation, that it got from the detector
+    /// Simply copies the estimation, that it got from the detector. vx and vy are calculated as
+    /// a difference of old point and the new point.
     fn update_estimation(&mut self, point: &GeometricPoint, angle: f64, cert: f64) {
         match &self.point {
             Some(p) => {

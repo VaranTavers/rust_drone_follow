@@ -1,13 +1,29 @@
 use crate::traits::Controller;
 
+/// The MockController acts as a false controller that provides a video file to the MainFrame along
+/// with it's resolution, and does nothing on commands given to it.
+///
+/// You can use it to test the tracking system on a prerecorded video.
 pub struct MockController {
-    filename: String
+    filename: String,
+    height: usize,
+    width: usize,
 }
 
 impl MockController {
-    pub fn new(filename: &str) -> MockController {
+    /// Usage:
+    /// ```
+    /// # use crate::controllers::MockController;
+    ///
+    /// # fn main() {
+    ///     let controller = MockController::new("video_file.mp4", 640, 368);
+    /// # }
+    /// ```
+    pub fn new(filename: &str, width: usize, height: usize) -> MockController {
         MockController {
-            filename: String::from(filename)
+            filename: String::from(filename),
+            height,
+            width
         }
     }
 }
@@ -48,13 +64,11 @@ impl Controller for MockController {
     }
 
     fn get_video_height(&self) -> usize {
-        // 348
-        720
+        self.height
     }
 
     fn get_video_width(&self) -> usize {
-        // 640
-        1280
+        self.width
     }
 
     /// Should return a link to an external resource that OpenCV can read
