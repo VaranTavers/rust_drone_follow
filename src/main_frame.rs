@@ -14,10 +14,10 @@ pub struct MainFrame<D: Detector, C: Controller, F: Filter> {
     detector: D,
     controller: C,
     filter: F,
-    speed: f64,
     p_c: PointConverter,
     prev_point: GeometricPoint,
     center_threshold: f64,
+    last_params: (f64, f64, f64, f64)
 }
 
 impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
@@ -27,19 +27,30 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
             detector,
             controller,
             filter,
-            speed: 0.5,
             prev_point: GeometricPoint::new(0, 0),
             center_threshold: 5.0,
+            last_params: (0.0, 0.0, 0.0, 0.0),
         }
     }
 
-    fn calculate_new_speed(&mut self, new_point: &GeometricPoint) {
+    fn control_the_drone(&mut self) {
         let k = 0.1;
-        let center = self.p_c.get_center();
-        let prev_diff = GeometricPoint::new(self.prev_point.x - center.x, self.prev_point.y - center.y).d();
-        let current_diff = GeometricPoint::new(new_point.x - center.x, new_point.y - center.y).d();
+        let min_change = 0.1;
+        let new_vx = (- self.filter.get_estimated_vx() * k).min(1.0).max(-1.0);
+        let new_vy = (- self.filter.get_estimated_vy() * k).min(1.0).max(-1.0);
 
-        self.speed += (current_diff - prev_diff) * k;
+        // TODO: It's not enough to move in the same speed as the person, we have to keep them in
+        // the center. + k has to be tested, might be moved into the Controller.
+
+        // TODO: Calculate turns.
+
+        // Check if a minimum change of speed is reached, in order not to have an overflow of move
+        // commands if it's not necessary.
+        let (old_vx, old_vy, old_vz, old_turn) = self.last_params;
+        if (new_vx - old_vx).abs() + (new_vx - old_vy).abs() > min_change {
+            self.controller.move_all(new_vx, new_vy, old_vz, old_turn);
+            self.last_params = (new_vx, new_vy, old_vz, old_turn);
+        }
     }
 
     pub fn run(&mut self) {
@@ -57,6 +68,8 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
                     &self.p_c);
                     self.detector.draw_on_image(&mut img, &self.p_c);
                     video_exporter.save_frame("test.mp4", &img);
+
+                    self.control_the_drone();
 
                     imshow("Image", &img).unwrap();
                     cv::highgui::wait_key(3).unwrap();

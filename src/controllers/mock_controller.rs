@@ -47,16 +47,18 @@ impl Controller for MockController {
         0.0
     }
 
-    /// Should return a link to an external resource that OpenCV can read
-    fn get_opencv_url(&self) -> String {
-        self.filename.clone()
-    }
-
     fn get_video_height(&self) -> usize {
-        348
+        // 348
+        720
     }
 
     fn get_video_width(&self) -> usize {
-        640
+        // 640
+        1280
+    }
+
+    /// Should return a link to an external resource that OpenCV can read
+    fn get_opencv_url(&self) -> String {
+        self.filename.clone()
     }
 }

@@ -151,7 +151,7 @@ fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f
         let l = contour.iter()
             .map(|p| Point::new(p.x, p.y))
             .collect::<Vec<Point>>();
-        (l, (500.0 / best_fit_area_diff).min(1.0))
+        (l, (500.0 / best_fit_area_diff).min(1.0).max(0.0))
     })
 }
 
@@ -159,7 +159,7 @@ fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f
 fn get_contour_with_closest_area_to(c_with_area: &Vec<(f64, VectorOfPoint)>, size_avg: f64) -> (f64, f64, Option<&VectorOfPoint>) {
     c_with_area.iter()
         .fold((-1.0, 500000.0, None), |(acc_a, acc_a_diff, acc_c), (c_a, c_c)| {
-            if *c_a >= size_avg / 2.0 && (size_avg - *c_a).abs() < acc_a_diff {
+            if *c_a >= size_avg / 2.0 && *c_a <= size_avg * 1.5 && (size_avg - *c_a).abs() < acc_a_diff {
                 return (*c_a, (size_avg - *c_a).abs(), Some(c_c));
             }
             (acc_a, acc_a_diff, acc_c)

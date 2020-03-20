@@ -5,6 +5,7 @@ mod opencv_custom;
 mod traits;
 
 // Hat description
+mod hat_file_reader;
 mod hat;
 mod point_converter;
 mod detectors;
@@ -24,13 +25,10 @@ use opencv_custom::MyColor;
 use crate::hat::Hat;
 
 fn main() {
+    let (filename, hat) = hat_file_reader::read_file("kek.hat");
     let mut s = MainFrame::new(
-        NaiveDetection::new(
-            Hat::new(
-            MyColor::new(0, 20, -20),
-            MyColor::new(100, 127, 90),
-            5200.0)),
-        MockController::new("./video-1574588281.mp4"),
+        NaiveDetection::new(hat),
+        MockController::new(filename.as_str()),
         NoFilter::new(),
     );
 
