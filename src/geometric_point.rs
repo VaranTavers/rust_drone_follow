@@ -1,5 +1,8 @@
 /// A new type for points that ensures type-safety: No point in the image's coordinate system gets into
 /// calculations and no point from calculations gets used as an input to an OpenCV drawing function.
+///
+/// These points are points from a descartes coordinate system, and you are able to use most
+/// mathematical formulas (formulae?).
 pub struct GeometricPoint {
     pub x: i32,
     pub y: i32
@@ -18,6 +21,7 @@ impl GeometricPoint {
     pub fn new(x: i32, y: i32) -> GeometricPoint {
         GeometricPoint { x, y }
     }
+    /// Distance from O(0, 0)
     pub fn d(&self) -> f64 {
         ((self.x.pow(2) + self.y.pow(2)) as f64).sqrt()
     }
@@ -30,6 +34,7 @@ pub fn get_center_of_geometric_points(contour: &Vec<GeometricPoint>) -> Geometri
     GeometricPoint::new(s_x / (l as i32), s_y / (l as i32))
 }
 
+/// Returns from a set of points the closest point to a given one.
 pub fn get_closest_from_geometric_points_to_point(contour: &Vec<GeometricPoint>, c: &GeometricPoint) -> (GeometricPoint, i32) {
     contour.iter()
         .fold((GeometricPoint::new(0, 0), 5000000), |(p, d), c_p| {

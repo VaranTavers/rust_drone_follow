@@ -10,6 +10,9 @@ use crate::traits::*;
 use crate::geometric_point::GeometricPoint;
 use crate::point_converter::PointConverter;
 
+/// The heart of the following mechanism. This struct orchestrates the three parts, in order to
+/// make the drone follow the object. It's only function is run() which initializes the drone, and
+/// starts following the person wearing the hat.
 pub struct MainFrame<D: Detector, C: Controller, F: Filter> {
     detector: D,
     controller: C,
@@ -21,6 +24,9 @@ pub struct MainFrame<D: Detector, C: Controller, F: Filter> {
 }
 
 impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
+
+    /// Returns a new MainFrame. Can be initialized with any fitting parameter, depending on your
+    /// needs.
     pub fn new(detector: D, controller: C, filter: F) -> MainFrame<D, C, F> {
         MainFrame {
             p_c: PointConverter::new(controller.get_video_width(), controller.get_video_height()),
@@ -53,6 +59,7 @@ impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
         }
     }
 
+    /// Initializes the drone, and makes it follow the person wearing the hat.
     pub fn run(&mut self) {
         let mut video_exporter = VideoExporter::new();
         let mut text_exporter = TextExporter::new();

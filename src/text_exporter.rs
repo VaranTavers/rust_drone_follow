@@ -9,6 +9,8 @@ pub struct TextExporter {
     command_sender: Sender<(String, Option<String>)>
 }
 
+/// Can be used to save text in the same way VideoExporter does. The saving runs on a different
+/// thread in order not to block the main thread.
 fn text_exporter_thread(rec: Receiver<(String, Option<String>)>) {
     let mut text_writers: HashMap<String, File> = HashMap::new();
 
@@ -37,6 +39,8 @@ fn text_exporter_thread(rec: Receiver<(String, Option<String>)>) {
 }
 
 impl TextExporter {
+
+    /// Creates a new TextExporter with no managed files.
     pub fn new() -> TextExporter {
         let (command_sender, receiver) = mpsc::channel();
         let join_handle = thread::spawn(move || {
@@ -48,6 +52,7 @@ impl TextExporter {
         }
     }
 
+    /// Will start writing a file if it isn't managed, otherwise it will append the row to it.
     pub fn save_row(&mut self, text_name: &str, text: String) {
         self.command_sender.send(
             (String::from(text_name), Some(text))
