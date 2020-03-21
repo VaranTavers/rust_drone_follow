@@ -8,7 +8,7 @@ use std::collections::HashMap;
 /// Can be used to export frames to a video file. The saving runs on a different thread in order
 /// not to block the main thread.
 pub struct VideoExporter {
-    join_handle: thread::JoinHandle<()>,
+    join_handle: Option<thread::JoinHandle<()>>,
     command_sender: Sender<(String, Option<Mat>)>
 }
 
@@ -47,9 +47,9 @@ impl VideoExporter {
     /// Creates a new VideoExporter with no managed files.
     pub fn new() -> VideoExporter {
         let (command_sender, receiver) = mpsc::channel();
-        let join_handle = thread::spawn(move || {
+        let join_handle = Some(thread::spawn(move || {
             video_exporter_thread(receiver);
-        });
+        }));
         VideoExporter {
             join_handle,
             command_sender
@@ -67,6 +67,6 @@ impl VideoExporter {
 impl Drop for VideoExporter {
     fn drop(&mut self) {
         self.command_sender.send((String::new(), None)).unwrap();
-        self.join_handle.join().unwrap();
+        self.join_handle.take().unwrap().join().unwrap();
     }
 }

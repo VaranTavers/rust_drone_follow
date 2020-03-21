@@ -5,7 +5,7 @@ use std::sync::mpsc::{self, Sender, Receiver};
 use std::collections::HashMap;
 
 pub struct TextExporter {
-    join_handle: thread::JoinHandle<()>,
+    join_handle: Option<thread::JoinHandle<()>>,
     command_sender: Sender<(String, Option<String>)>
 }
 
@@ -43,9 +43,9 @@ impl TextExporter {
     /// Creates a new TextExporter with no managed files.
     pub fn new() -> TextExporter {
         let (command_sender, receiver) = mpsc::channel();
-        let join_handle = thread::spawn(move || {
+        let join_handle = Some(thread::spawn(move || {
             text_exporter_thread(receiver);
-        });
+        }));
         TextExporter {
             join_handle,
             command_sender
@@ -63,6 +63,6 @@ impl TextExporter {
 impl Drop for TextExporter {
     fn drop(&mut self) {
         self.command_sender.send((String::new(), None)).unwrap();
-        self.join_handle.join().unwrap();
+        self.join_handle.take().unwrap().join().unwrap();
     }
 }
