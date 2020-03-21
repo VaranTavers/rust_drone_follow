@@ -41,26 +41,9 @@ impl Controller for MockController {
 
     fn move_all(&mut self, _left_right: f64, _back_front: f64, _down_up: f64, _turn_left_right: f64) {
     }
-    fn move_forward(&mut self, _speed: f64) {
-    }
-    fn move_backward(&mut self, _speed: f64) {
-    }
-    fn move_left(&mut self, _speed: f64) {
-    }
-    fn move_right(&mut self, _speed: f64) {
-    }
-    fn move_up(&mut self, _speed: f64) {
-    }
-    fn move_down(&mut self, _speed: f64) {
-    }
 
     /// Should halt all movement
     fn stop(&mut self) {
-    }
-
-    /// Should return height in cm-s
-    fn get_height(&self) -> f64 {
-        0.0
     }
 
     fn get_video_height(&self) -> usize {
