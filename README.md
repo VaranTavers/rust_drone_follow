@@ -40,19 +40,19 @@ video frame. It also calculates the angle that the hat is facing. (in general it
 
 ```rust
 pub trait Detector {
-     Should return the position of the detected object in the descartes coordinate system.
+    /// Should return the position of the detected object in the descartes coordinate system.
     fn get_detected_position(&self) -> Option<GeometricPoint>;
 
-     Should return the angle that the object turning towards.
+    /// Should return the angle that the object turning towards.
     fn get_detected_angle(&self) -> Option<f64>;
 
-     Should return the certainty of the detection, mostly the certainty of the angle detection.
+    /// Should return the certainty of the detection, mostly the certainty of the angle detection.
     fn get_detection_certainty(&self) -> f64;
 
-     Should recalculate it's values based on a new image given to it.
+    /// Should recalculate it's values based on a new image given to it.
     fn detect_new_position(&mut self, img: &Mat, old_pos: Option<Point>, p_c: &PointConverter);
 
-     Should display visually some parts of the detection. (optional)
+    /// Should display visually some parts of the detection. (optional)
     fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
 }
 ```
@@ -95,18 +95,18 @@ provides important information about certain properties of the drone, such as vi
 
 ```rust
 pub trait Controller {
-     Should handle connecting to the drone.
+    /// Should handle connecting to the drone.
     fn init(&mut self);
-     Should handle disconnecting from the drone.
+    /// Should handle disconnecting from the drone.
     fn shutdown(&mut self);
 
-     Should make the drone take off and assume the correct height.
+    /// Should make the drone take off and assume the correct height.
     fn takeoff(&mut self);
-     Should make the drone land.
+    /// Should make the drone land.
     fn land(&mut self);
 
-     Negative values ([-1.0, 0.0)) mean going towards the first direction, positive values
-     ((0.0, 1.0])) mean going towards the second direction.
+    /// Negative values ([-1.0, 0.0)) mean going towards the first direction, positive values
+    /// ((0.0, 1.0])) mean going towards the second direction.
     fn move_all(&mut self, left_right: f64, back_front: f64, down_up: f64, turn_left_right: f64);
     fn move_forward(&mut self, speed: f64);
     fn move_backward(&mut self, speed: f64);
@@ -115,19 +115,19 @@ pub trait Controller {
     fn move_up(&mut self, speed: f64);
     fn move_down(&mut self, speed: f64);
 
-     Should halt all movement
+    /// Should halt all movement
     fn stop(&mut self);
 
-     Should return height in cm-s
+    /// Should return height in cm-s
     fn get_height(&self) -> f64;
 
-     Should return the video's height in pixels
+    /// Should return the video's height in pixels
     fn get_video_height(&self) -> usize;
-     Should return the video's width in pixels
+    /// Should return the video's width in pixels
     fn get_video_width(&self) -> usize;
-     Should return a link to an external resource that OpenCV can read
+    /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
-     TBD
+    /// TBD
     fn get_k(&self) -> f64;
 }
 ```
@@ -153,18 +153,18 @@ drone.
 
 ```rust
 pub trait Filter {
-     Updates the estimation based on new information.
+    /// Updates the estimation based on new information.
     fn update_estimation(&mut self, point: &GeometricPoint, angle: f64, cert: f64);
 
-     Returns the estimated position of the hat.
+    /// Returns the estimated position of the hat.
     fn get_estimated_position(&self) -> Option<GeometricPoint>;
-     Returns the estimated angle of the hat.
+    /// Returns the estimated angle of the hat.
     fn get_estimated_angle(&self) -> f64;
-     Returns the estimated horizontal speed of the hat.
+    /// Returns the estimated horizontal speed of the hat.
     fn get_estimated_vx(&self) -> f64;
-     Returns the estimated vertical speed of the hat.
+    /// Returns the estimated vertical speed of the hat.
     fn get_estimated_vy(&self) -> f64;
-     Returns the certainty of the estimation.
+    /// Returns the certainty of the estimation.
     fn get_estimation_certainty(&self) -> f64;
 
      Returns the certainty of the estimation.
