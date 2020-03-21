@@ -22,6 +22,9 @@ enum TanableAngle {
 /// and it calculates it's central point by averaging all the points of the contour of the object
 /// the angle by calculating it's sides and calculating the line's, which connects them, normal.
 ///
+/// This detector works with baseball caps, and by angle we mean the angle between a line which goes
+/// intersect's the hat for it's longest section and a horizontal line.
+///
 /// This angle will always be between -pi/2 and pi/2.
 ///
 /// This Detector doesn't take into account previous coordinates of the tracked object.

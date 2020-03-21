@@ -75,4 +75,9 @@ impl Controller for MockController {
     fn get_opencv_url(&self) -> String {
         self.filename.clone()
     }
+
+    /// WIP
+    fn get_k(&self) -> f64 {
+        0.0
+    }
 }

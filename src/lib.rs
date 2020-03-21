@@ -4,6 +4,22 @@ use cv::highgui::*;
 use cv::videoio::*;
 use opencv::imgproc::{LINE_8, circle};
 
+mod video_exporter;
+mod text_exporter;
+
+mod geometric_point;
+mod opencv_custom;
+
+mod hat_file_reader;
+mod hat;
+
+mod traits;
+
+mod point_converter;
+mod detectors;
+mod filters;
+mod controllers;
+
 use crate::video_exporter::VideoExporter;
 use crate::text_exporter::TextExporter;
 use crate::traits::*;
@@ -13,7 +29,7 @@ use crate::point_converter::PointConverter;
 /// The heart of the following mechanism. This struct orchestrates the three parts, in order to
 /// make the drone follow the object. It's only function is run() which initializes the drone, and
 /// starts following the person wearing the hat.
-pub struct MainFrame<D: Detector, C: Controller, F: Filter> {
+pub struct HatFollower<D: Detector, C: Controller, F: Filter> {
     detector: D,
     controller: C,
     filter: F,
@@ -23,12 +39,12 @@ pub struct MainFrame<D: Detector, C: Controller, F: Filter> {
     last_params: (f64, f64, f64, f64)
 }
 
-impl<D: Detector, C: Controller, F: Filter> MainFrame<D, C, F> {
+impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
-    /// Returns a new MainFrame. Can be initialized with any fitting parameter, depending on your
+    /// Returns a new HatFollower. Can be initialized with any fitting parameter, depending on your
     /// needs.
-    pub fn new(detector: D, controller: C, filter: F) -> MainFrame<D, C, F> {
-        MainFrame {
+    pub fn new(detector: D, controller: C, filter: F) -> HatFollower<D, C, F> {
+        HatFollower {
             p_c: PointConverter::new(controller.get_video_width(), controller.get_video_height()),
             detector,
             controller,

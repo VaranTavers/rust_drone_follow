@@ -79,4 +79,7 @@ pub trait Controller {
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
 
+    /// TBD
+    fn get_k(&self) -> f64;
+
 }
