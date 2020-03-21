@@ -1,5 +1,5 @@
 [package]
-name = "hat_detect"
+name = "rust_drone_follow"
 version = "0.1.0"
 authors = ["VaranTavers <tasnadi98@freemail.hu>"]
 edition = "2018"

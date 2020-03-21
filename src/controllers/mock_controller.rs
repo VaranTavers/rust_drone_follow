@@ -13,8 +13,8 @@ pub struct MockController {
 impl MockController {
     /// Usage:
     /// ```
-    /// # use crate::controllers::MockController;
-    ///
+    /// use rust_drone_follow::controllers::mock_controller::MockController;
+    /// // ...
     /// # fn main() {
     ///     let controller = MockController::new("video_file.mp4", 640, 368);
     /// # }

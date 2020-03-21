@@ -1,4 +1,4 @@
-# rust_hat_follow
+# rust_drone_follow
 
 This is a Rust library that aims to be able to control a drone, in order to have it follow a hat, that it detects with
 it's downwards facing camera. (a compatible drone is for example: Parrot AR Drone 2.0)

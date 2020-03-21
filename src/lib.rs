@@ -4,21 +4,21 @@ use cv::highgui::*;
 use cv::videoio::*;
 use opencv::imgproc::{LINE_8, circle};
 
-mod video_exporter;
-mod text_exporter;
+pub mod video_exporter;
+pub mod text_exporter;
 
-mod geometric_point;
-mod opencv_custom;
+pub mod geometric_point;
+pub mod opencv_custom;
 
-mod hat_file_reader;
-mod hat;
+pub mod hat_file_reader;
+pub mod hat;
 
-mod traits;
+pub mod traits;
 
-mod point_converter;
-mod detectors;
-mod filters;
-mod controllers;
+pub mod point_converter;
+pub mod detectors;
+pub mod filters;
+pub mod controllers;
 
 use crate::video_exporter::VideoExporter;
 use crate::text_exporter::TextExporter;
@@ -103,7 +103,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         let mut img = Mat::zeros_size(Size::new(1,1), CV_8U).unwrap().to_mat().unwrap();
         loop {
             if let Some(receiver) = &mut self.stop_channel {
-                if let Some(_) = receiver.try_recv() {
+                if let Ok(_) = receiver.try_recv() {
                     break;
                 }
             }

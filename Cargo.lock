@@ -135,13 +135,6 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "hat_detect"
-version = "0.1.0"
-dependencies = [
- "opencv 0.29.3 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -347,6 +340,13 @@ dependencies = [
 name = "regex-syntax"
 version = "0.6.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "rust_drone_follow"
+version = "0.1.0"
+dependencies = [
+ "opencv 0.29.3 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "rustc_version"
