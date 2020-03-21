@@ -1,4 +1,4 @@
-# rust_hat_follow
+# rust_drone_follow
 
 This is a Rust library that aims to be able to control a drone, in order to have it follow a hat, that it detects with
 it's downwards facing camera. (a compatible drone is for example: Parrot AR Drone 2.0)
@@ -10,12 +10,17 @@ The heart of this library is the HatFollower struct that is generic with three t
 and a Filter.
 
 ```rust
-pub fn new(detector: D, controller: C, filter: F) -> HatFollower<D, C, F>;
+pub fn new(detector: D, controller: C, filter: F, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
+    //...
+}
 ```
 
 It has a `run` function that will start up the drone and start following the hat.
 
 Example of instantiation, and usage:
+
+!!! Beware, if you use a real controller and you don't pass a Receiver when instantiating this or/and you don't run it on a separate 
+thread it will run indefinitely !!!
 
 ```rust
 fn main() {                                                                       
@@ -27,6 +32,7 @@ fn main() {
                                )),
         MockController::new("test.mp4", 1280, 720),
         NoFilter::new(),
+        None,
     );
     s.run();                                                                      
 }
@@ -108,18 +114,8 @@ pub trait Controller {
     /// Negative values ([-1.0, 0.0)) mean going towards the first direction, positive values
     /// ((0.0, 1.0])) mean going towards the second direction.
     fn move_all(&mut self, left_right: f64, back_front: f64, down_up: f64, turn_left_right: f64);
-    fn move_forward(&mut self, speed: f64);
-    fn move_backward(&mut self, speed: f64);
-    fn move_left(&mut self, speed: f64);
-    fn move_right(&mut self, speed: f64);
-    fn move_up(&mut self, speed: f64);
-    fn move_down(&mut self, speed: f64);
-
     /// Should halt all movement
     fn stop(&mut self);
-
-    /// Should return height in cm-s
-    fn get_height(&self) -> f64;
 
     /// Should return the video's height in pixels
     fn get_video_height(&self) -> usize;
@@ -127,8 +123,12 @@ pub trait Controller {
     fn get_video_width(&self) -> usize;
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
-    /// TBD
+    /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames
     fn get_k(&self) -> f64;
+    /// Conversion rate between da/dt and drone turn speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames, and da is the angle difference between frames.
+    fn get_ka(&self) -> f64;
 }
 ```
 

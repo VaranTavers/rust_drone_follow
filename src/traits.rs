@@ -57,18 +57,8 @@ pub trait Controller {
     /// Negative values ([-1.0, 0.0)) mean going towards the first direction, positive values
     /// ((0.0, 1.0])) mean going towards the second direction.
     fn move_all(&mut self, left_right: f64, back_front: f64, down_up: f64, turn_left_right: f64);
-    fn move_forward(&mut self, speed: f64);
-    fn move_backward(&mut self, speed: f64);
-    fn move_left(&mut self, speed: f64);
-    fn move_right(&mut self, speed: f64);
-    fn move_up(&mut self, speed: f64);
-    fn move_down(&mut self, speed: f64);
-
     /// Should halt all movement
     fn stop(&mut self);
-
-    /// Should return height in cm-s
-    fn get_height(&self) -> f64;
 
     /// Should return the video's height in pixels
     fn get_video_height(&self) -> usize;
@@ -79,7 +69,12 @@ pub trait Controller {
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
 
-    /// TBD
-    fn get_k(&self) -> f64;
+    /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames
+    fn get_kv(&self) -> f64;
+
+    /// Conversion rate between da/dt and drone turn speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames, and da is the angle difference between frames.
+    fn get_ka(&self) -> f64;
 
 }

@@ -9,18 +9,44 @@ pub struct PointConverter {
 }
 
 impl PointConverter {
+    /// Returns a new PointConverter that can convert between OpenCV points and GeometricPoints.
+    ///
+    /// The center of the image will be considered as O(0,0) in the GeometricPoint's coordinate-system
+    ///
+    /// Usage:
+    ///
+    /// ```
+    ///     use rust_drone_follow::point_converter::PointConverter;
+    /// // ...
+    /// # fn main() {
+    ///     let p_c = PointConverter::new(640, 368);
+    /// # }
+    /// ```
     pub fn new(width: usize, height: usize) -> PointConverter {
         PointConverter {
             width,
             height,
         }
     }
-    /// Returns the center of this descartes coordinate-system (0, 0)
+    /// Returns the center of a descartes coordinate-system (0, 0)
     pub fn get_center(&self) -> GeometricPoint {
         GeometricPoint::new(0, 0)
     }
 
     /// Takes a point from the coordinate system of an image and returns one in this descartes coordinate-system
+    ///
+    /// Usage:
+    ///
+    /// ```
+    /// #    use rust_drone_follow::point_converter::PointConverter;
+    ///      use opencv::core::Point;
+    /// // ...
+    /// # fn main() {
+    /// #   let p_c = PointConverter::new(640, 368);
+    ///     let cent = p_c.convert_from_image_coords(&Point::new(320, 184));
+    ///     println!("({}, {})", cent.x, cent.y);
+    /// # }
+    /// ```
     pub fn convert_from_image_coords(&self, point: &Point) -> GeometricPoint {
         GeometricPoint::new(
                 point.x - (self.width as i32 / 2),
@@ -29,6 +55,19 @@ impl PointConverter {
     }
 
     /// Takes a point from this descartes coordinate-system and returns one in the coordinate system of an image
+    ///
+    /// Usage:
+    ///
+    /// ```
+    /// #    use rust_drone_follow::point_converter::PointConverter;
+    /// use rust_drone_follow::geometric_point::GeometricPoint;
+    /// // ...
+    /// # fn main() {
+    /// #    let p_c = PointConverter::new(640, 368);
+    ///     let cent = p_c.convert_to_image_coords(&GeometricPoint::new(0, 0));
+    ///     println!("({}, {})", cent.x, cent.y);
+    /// # }
+    /// ```
     pub fn convert_to_image_coords(&self, point: &GeometricPoint) -> Point {
         Point::new(
                 point.x + (self.width as i32 / 2),

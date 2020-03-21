@@ -14,8 +14,9 @@ impl Hat {
     ///
     /// Usage:
     /// ```
-    /// # use crate::hat::Hat;
-    /// # use crate::opencv_custom::LabColor;
+    /// use rust_drone_follow::hat::Hat;
+    /// use rust_drone_follow::opencv_custom::LabColor;
+    /// // ...
     /// # fn main() {
     ///    let hat = Hat::new(
     ///         LabColor::new(0, 20, -127),

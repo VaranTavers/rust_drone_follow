@@ -13,8 +13,8 @@ pub struct MockController {
 impl MockController {
     /// Usage:
     /// ```
-    /// # use crate::controllers::MockController;
-    ///
+    /// use rust_drone_follow::controllers::mock_controller::MockController;
+    /// // ...
     /// # fn main() {
     ///     let controller = MockController::new("video_file.mp4", 640, 368);
     /// # }
@@ -41,26 +41,9 @@ impl Controller for MockController {
 
     fn move_all(&mut self, _left_right: f64, _back_front: f64, _down_up: f64, _turn_left_right: f64) {
     }
-    fn move_forward(&mut self, _speed: f64) {
-    }
-    fn move_backward(&mut self, _speed: f64) {
-    }
-    fn move_left(&mut self, _speed: f64) {
-    }
-    fn move_right(&mut self, _speed: f64) {
-    }
-    fn move_up(&mut self, _speed: f64) {
-    }
-    fn move_down(&mut self, _speed: f64) {
-    }
 
     /// Should halt all movement
     fn stop(&mut self) {
-    }
-
-    /// Should return height in cm-s
-    fn get_height(&self) -> f64 {
-        0.0
     }
 
     fn get_video_height(&self) -> usize {
@@ -76,8 +59,15 @@ impl Controller for MockController {
         self.filename.clone()
     }
 
-    /// WIP
-    fn get_k(&self) -> f64 {
-        0.0
+    /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames
+    fn get_kv(&self) -> f64 {
+        1.0
+    }
+
+    /// Conversion rate between da/dt and drone turn speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames, and da is the angle difference between frames.
+    fn get_ka(&self) -> f64 {
+        1.0
     }
 }
