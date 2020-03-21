@@ -167,7 +167,7 @@ pub trait Filter {
     /// Returns the certainty of the estimation.
     fn get_estimation_certainty(&self) -> f64;
 
-     Returns the certainty of the estimation.
+    /// Returns the certainty of the estimation.
     fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
 }
 ```
