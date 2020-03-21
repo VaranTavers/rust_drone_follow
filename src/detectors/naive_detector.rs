@@ -1,10 +1,9 @@
 use opencv as cv;
 use cv::core::*;
-use cv::prelude::*;
-use opencv::imgproc::{contour_area, line, LINE_8, circle};
-use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
+use opencv::imgproc::{contour_area, LINE_8, circle};
+use opencv::types::{VectorOfPoint};
 
-use crate::opencv_custom::{LabColor, get_contours, line_c, get_red, get_green};
+use crate::opencv_custom::{get_contours, line_c, get_red, get_green};
 use crate::traits::{Detector};
 use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
 use crate::point_converter::PointConverter;
@@ -40,6 +39,23 @@ pub struct NaiveDetector {
 impl NaiveDetector {
     /// Requires a Hat given to it, which contains the information about the hat that the detector
     /// is looking for.
+    ///
+    /// Usage:
+    ///
+    ///```
+    /// use rust_drone_follow::detectors::naive_detector::NaiveDetector;
+    /// use rust_drone_follow::opencv_custom::LabColor;
+    /// use rust_drone_follow::hat::Hat;
+    /// // ...
+    /// # fn main() {
+    ///     let hat = Hat::new(
+    ///            LabColor::new(0, 20, -127),
+    ///            LabColor::new(80, 127, -20),
+    ///            1200.0
+    ///        );
+    ///     let naive_detector = NaiveDetector::new(hat);
+    /// # }
+    /// ```
     pub fn new(hat: Hat) -> NaiveDetector {
         NaiveDetector {
             point: None,

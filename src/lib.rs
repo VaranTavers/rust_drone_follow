@@ -2,7 +2,6 @@ use opencv as cv;
 use cv::core::*;
 use cv::highgui::*;
 use cv::videoio::*;
-use opencv::imgproc::{LINE_8, circle};
 
 pub mod video_exporter;
 pub mod text_exporter;
@@ -21,9 +20,7 @@ pub mod filters;
 pub mod controllers;
 
 use crate::video_exporter::VideoExporter;
-use crate::text_exporter::TextExporter;
 use crate::traits::*;
-use crate::geometric_point::GeometricPoint;
 use crate::point_converter::PointConverter;
 use std::sync::mpsc::Receiver;
 
@@ -35,7 +32,6 @@ pub struct HatFollower<D: Detector, C: Controller, F: Filter> {
     controller: C,
     filter: F,
     p_c: PointConverter,
-    prev_point: GeometricPoint,
     prev_angle: f64,
     center_threshold: f64,
     last_params: (f64, f64, f64, f64),
@@ -46,13 +42,38 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
     /// Returns a new HatFollower. Can be initialized with any fitting parameter, depending on your
     /// needs.
+    ///
+    /// !!! Beware, if you use a real controller and you don't pass a Receiver when instantiating this or/and you don't run it on a separate
+    /// thread it will run indefinitely !!!
+    ///
+    /// Usage example:
+    /// ```
+    /// use rust_drone_follow::detectors::naive_detector::NaiveDetector;
+    /// use rust_drone_follow::hat::Hat;
+    /// use rust_drone_follow::opencv_custom::LabColor;
+    /// use rust_drone_follow::controllers::mock_controller::MockController;
+    /// use rust_drone_follow::filters::no_filter::NoFilter;
+    /// use rust_drone_follow::HatFollower;
+    ///
+    /// fn main() {
+    ///     let mut s = HatFollower::new(
+    ///        NaiveDetector::new(Hat::new(
+    ///            LabColor::new(0, 20, -127),
+    ///            LabColor::new(80, 127, -20),
+    ///            1200.0
+    ///        )),
+    ///        MockController::new("test.mp4", 1280, 720),
+    ///        NoFilter::new(),
+    ///        None,
+    ///    );
+    /// }
+    /// ```
     pub fn new(detector: D, controller: C, filter: F, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
         HatFollower {
             p_c: PointConverter::new(controller.get_video_width(), controller.get_video_height()),
             detector,
             controller,
             filter,
-            prev_point: GeometricPoint::new(0, 0),
             prev_angle: 0.0,
             center_threshold: 5.0,
             last_params: (0.0, 0.0, 0.0, 0.0),

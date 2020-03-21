@@ -3,6 +3,12 @@ name = "rust_drone_follow"
 version = "0.1.0"
 authors = ["VaranTavers <tasnadi98@freemail.hu>"]
 edition = "2018"
+license = "GPL-3.0-or-later"
+keywords = ["follow", "drone", "hat"]
+documentation = "https://docs.rs/rust_drone_follow"
+homepage = "https://github.com/VaranTavers/rust_drone_follow"
+repository = "https://github.com/VaranTavers/rust_drone_follow"
+description = "This library aims at providing a way to make a drone fly above and follow a person wearing a hat (mostly baseball cap)."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

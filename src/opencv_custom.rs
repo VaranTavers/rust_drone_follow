@@ -2,7 +2,6 @@ use opencv as cv;
 use cv::core::*;
 use opencv::imgproc::{COLOR_BGR2Lab, cvt_color, LINE_8, line};
 use std::clone::Clone;
-use opencv::types::VectorOfPoint;
 
 /// Creates a new Matrix with the same size and same type as the original.
 pub fn mat_size_of_other(mat: &Mat) -> Mat {
