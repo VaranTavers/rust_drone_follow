@@ -35,6 +35,7 @@ pub struct HatFollower<D: Detector, C: Controller, F: Filter> {
     filter: F,
     p_c: PointConverter,
     prev_point: GeometricPoint,
+    prev_angle: f64,
     center_threshold: f64,
     last_params: (f64, f64, f64, f64)
 }
@@ -50,21 +51,37 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
             controller,
             filter,
             prev_point: GeometricPoint::new(0, 0),
+            prev_angle: 0.0,
             center_threshold: 5.0,
             last_params: (0.0, 0.0, 0.0, 0.0),
         }
     }
 
+    fn calculate_speed_to_center(&self, x: i32) -> f64 {
+        let frames_to_be_centered = 10.0;
+        if x.abs() as f64 > self.center_threshold {
+            return x as f64 / frames_to_be_centered;
+        }
+        0.0
+    }
+    fn get_new_speeds(&mut self) -> (f64, f64) {
+        let (x,y) = (self.filter.get_estimated_position().unwrap().x, self.filter.get_estimated_position().unwrap().y);
+        let vx_to_center = self.calculate_speed_to_center(x);
+        let vy_to_center = self.calculate_speed_to_center(y);
+
+        let kv = self.controller.get_kv();
+        (
+            ((vx_to_center - self.filter.get_estimated_vx()) * kv).min(1.0).max(-1.0),
+            ((vy_to_center - self.filter.get_estimated_vy()) * kv).min(1.0).max(-1.0)
+        )
+    }
+
     fn control_the_drone(&mut self) {
-        let k = 0.1;
         let min_change = 0.1;
-        let new_vx = (- self.filter.get_estimated_vx() * k).min(1.0).max(-1.0);
-        let new_vy = (- self.filter.get_estimated_vy() * k).min(1.0).max(-1.0);
 
-        // TODO: It's not enough to move in the same speed as the person, we have to keep them in
-        // the center. + k has to be tested, might be moved into the Controller.
-
-        // TODO: Calculate turns.
+        let (new_vx, new_vy) = self.get_new_speeds();
+        let ka = self.controller.get_ka();
+        let new_turn = ((self.filter.get_estimated_angle() - self.prev_angle) * ka).min(1.0).max(-1.0);
 
         // Check if a minimum change of speed is reached, in order not to have an overflow of move
         // commands if it's not necessary.
@@ -78,7 +95,6 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     /// Initializes the drone, and makes it follow the person wearing the hat.
     pub fn run(&mut self) {
         let mut video_exporter = VideoExporter::new();
-        let mut text_exporter = TextExporter::new();
         let mut video = VideoCapture::new_from_file_with_backend(self.controller.get_opencv_url().as_str(), CAP_ANY).unwrap();
         let mut img = Mat::zeros_size(Size::new(1,1), CV_8U).unwrap().to_mat().unwrap();
         loop {

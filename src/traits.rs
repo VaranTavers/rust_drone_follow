@@ -79,7 +79,12 @@ pub trait Controller {
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
 
-    /// TBD
-    fn get_k(&self) -> f64;
+    /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames
+    fn get_kv(&self) -> f64;
+
+    /// Conversion rate between da/dt and drone turn speed which is in (-1.0, 1.0), where dt is the
+    /// time difference between frames, and da is the angle difference between frames.
+    fn get_ka(&self) -> f64;
 
 }
