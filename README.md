@@ -10,12 +10,17 @@ The heart of this library is the HatFollower struct that is generic with three t
 and a Filter.
 
 ```rust
-pub fn new(detector: D, controller: C, filter: F) -> HatFollower<D, C, F>;
+pub fn new(detector: D, controller: C, filter: F, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
+    //...
+}
 ```
 
 It has a `run` function that will start up the drone and start following the hat.
 
 Example of instantiation, and usage:
+
+!!! Beware, if you use a real controller and you don't pass a Receiver when instantiating this or/and you don't run it on a separate 
+thread it will run indefinitely !!!
 
 ```rust
 fn main() {                                                                       
@@ -27,6 +32,7 @@ fn main() {
                                )),
         MockController::new("test.mp4", 1280, 720),
         NoFilter::new(),
+        None,
     );
     s.run();                                                                      
 }
