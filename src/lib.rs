@@ -122,6 +122,9 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     /// Initializes the drone, and makes it follow the person wearing the hat. It can only be stopped
     /// by sending a message through the channel whose receiver was given as a parameter in the constructor.
     pub fn run(&mut self) {
+        self.controller.init();
+        self.controller.takeoff();
+
         let mut video_exporter = VideoExporter::new();
         let mut video = VideoCapture::new_from_file_with_backend(self.controller.get_opencv_url().as_str(), CAP_ANY).unwrap();
         let mut img = Mat::zeros_size(Size::new(1,1), CV_8U).unwrap().to_mat().unwrap();
