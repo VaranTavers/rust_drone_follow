@@ -89,6 +89,9 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         0.0
     }
     fn get_new_speeds(&mut self) -> (f64, f64) {
+        if let None = self.filter.get_estimated_position() {
+            return (0.0, 0.0);
+        }
         let (x,y) = (self.filter.get_estimated_position().unwrap().x, self.filter.get_estimated_position().unwrap().y);
         let vx_to_center = self.calculate_speed_to_center(x);
         let vy_to_center = self.calculate_speed_to_center(y);
