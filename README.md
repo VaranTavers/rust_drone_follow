@@ -225,6 +225,16 @@ Example:
 let no_filter = NoFilter::new();
 ```
 
+### MemoryFilter
+
+This is the same as NoFilter with the exception that in case the point is no longer detected (went off-frame) it retains 
+it's last known position (this way the drone will try to move towards it).
+
+Example:
+```rust
+let memory_filter = MemoryFilter::new();
+```
+
 ### KalmanFilter
 
 This part is not yet implemented. Check back later.
