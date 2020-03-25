@@ -178,6 +178,16 @@ To instantiate you have to give it a path string to the video file, and the reso
 let mock_controller = MockController::new("test.mp4", 1280, 720);
 ```
 
+## Other controllers
+
+This library doesn't include any additional controllers, however you are free to implement your own, or use the 
+following ones.
+
+Other controllers implemented:
+
+- Parrot AR Drone 2.0 (VaranTavers) (binary): [parrot_hat_follow](https://github.com/VaranTavers/parrot_hat_follow)
+
+
 ## Filter
 
 The filter is the part of the system that is responsible for making sure, that no errors during detection mess up the
@@ -226,6 +236,7 @@ This part is not yet implemented. Check back later.
 Can be used to export frames to multiple video files.
 
 Usage:
+
 ```rust
 fn main() {
     let mut video_exporter = VideoExporter::new();
@@ -251,6 +262,7 @@ fn main() {
 Can be used to save text to multiple files simultaneously.
 
 Usage:
+
 ```rust
 fn main() {
     let mut text_exporter = TextExporter::new();
