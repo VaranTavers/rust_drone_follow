@@ -31,16 +31,20 @@ impl NoFilter {
 impl Filter for NoFilter {
     /// Simply copies the estimation, that it got from the detector. vx and vy are calculated as
     /// a difference of old point and the new point.
-    fn update_estimation(&mut self, point: &GeometricPoint, angle: f64, cert: f64) {
+    fn update_estimation(&mut self, point: Option<GeometricPoint>, angle: Option<f64>, cert: f64) {
         match &self.point {
             Some(p) => {
-                self.vx = (point.x - p.x) as f64;
-                self.vy = (point.y - p.y) as f64;
+                if let Some(point) = &point {
+                    self.vx = (point.x - p.x) as f64;
+                    self.vy = (point.y - p.y) as f64;
+                }
             }
             _ => { }
         }
-        self.point = Some((*point).clone());
-        self.angle = angle;
+        self.point = point;
+        if let Some(angle) = angle {
+            self.angle = angle;
+        }
         self.cert = cert;
     }
 

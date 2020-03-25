@@ -187,7 +187,7 @@ drone.
 ```rust
 pub trait Filter {
     /// Updates the estimation based on new information.
-    fn update_estimation(&mut self, point: &GeometricPoint, angle: f64, cert: f64);
+    fn update_estimation(&mut self, point: Option<GeometricPoint>, angle: Option<f64>, cert: f64);
 
     /// Returns the estimated position of the hat.
     fn get_estimated_position(&self) -> Option<GeometricPoint>;

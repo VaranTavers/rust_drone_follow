@@ -148,6 +148,12 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
                         point_for_detector.map(|gp| self.p_c.convert_to_image_coords( &gp)),
                     &self.p_c);
 
+                    self.filter.update_estimation(
+                        self.detector.get_detected_position(),
+                        self.detector.get_detected_angle(),
+                        self.detector.get_detection_certainty()
+                    );
+
                     // Drawing on the image
                     if self.settings.draw_detection {
                         self.detector.draw_on_image(&mut img, &self.p_c);
