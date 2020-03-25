@@ -10,7 +10,7 @@ The heart of this library is the HatFollower struct that is generic with three t
 and a Filter.
 
 ```rust
-pub fn new(detector: D, controller: C, filter: F, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
+    pub fn new(detector: D, controller: C, filter: F, settings: HatFollowerSettings, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
     //...
 }
 ```
@@ -32,9 +32,42 @@ fn main() {
                                )),
         MockController::new("test.mp4", 1280, 720),
         NoFilter::new(),
+        HatFollowerSettings::new(),
         None,
     );
     s.run();                                                                      
+}
+```
+
+### Settings
+
+You can change settings by giving the HatFollower a different setting struct at the beginning. There are three pre-made 
+settings, but you can always create your own. 
+
+`new()` => Returns settings with a default setting: (show video, no save, no draw)
+
+`debug()` => Returns settings with full debug setting: (show video, save video, draw all)
+
+`silent()` => Returns settings with silent setting: (no video, no save, no draw)
+
+```rust
+pub struct HatFollowerSettings {
+    /// Radius of circle around the center that is considered to be okay (if the drone is over this
+    /// circle it tries to stay there, otherwise it tries to get over it).
+    pub center_threshold: f64,
+    /// Minimum amount of change in speeds needed to issue a new move command.
+    pub min_change: f64,
+    /// Under how many frames(as time measurement) we want the drone to reach the center
+    pub frames_to_be_centered: f64,
+    /// Should the program save the video
+    pub save_to_file: Option<String>,
+    /// Should the program show the image real-time
+    pub show_video: bool,
+    /// Should the program draw the detection markers on the video
+    pub draw_detection: bool,
+    /// Should the program draw the filter markers on the video
+    pub draw_filter: bool,
+
 }
 ```
 

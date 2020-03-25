@@ -1,7 +1,4 @@
-use opencv as cv;
-use cv::core::*;
-use cv::highgui::*;
-use cv::videoio::*;
+pub mod hat_follower_settings;
 
 pub mod video_exporter;
 pub mod text_exporter;
@@ -19,10 +16,17 @@ pub mod detectors;
 pub mod filters;
 pub mod controllers;
 
+use std::sync::mpsc::Receiver;
+
+use opencv as cv;
+use cv::core::*;
+use cv::highgui::*;
+use cv::videoio::*;
+
 use crate::video_exporter::VideoExporter;
 use crate::traits::*;
 use crate::point_converter::PointConverter;
-use std::sync::mpsc::Receiver;
+use crate::hat_follower_settings::HatFollowerSettings;
 
 /// The heart of the following mechanism. This struct orchestrates the three parts, in order to
 /// make the drone follow the object. It's only function is run() which initializes the drone, and
@@ -33,9 +37,9 @@ pub struct HatFollower<D: Detector, C: Controller, F: Filter> {
     filter: F,
     p_c: PointConverter,
     prev_angle: f64,
-    center_threshold: f64,
     last_params: (f64, f64, f64, f64),
     stop_channel: Option<Receiver<i32>>,
+    settings: HatFollowerSettings,
 }
 
 impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
@@ -54,6 +58,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     /// use rust_drone_follow::controllers::mock_controller::MockController;
     /// use rust_drone_follow::filters::no_filter::NoFilter;
     /// use rust_drone_follow::HatFollower;
+    /// use rust_drone_follow::hat_follower_settings::HatFollowerSettings;
     ///
     /// fn main() {
     ///     let mut s = HatFollower::new(
@@ -64,26 +69,27 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     ///        )),
     ///        MockController::new("test.mp4", 1280, 720),
     ///        NoFilter::new(),
+    ///        HatFollowerSettings::new(),
     ///        None,
     ///    );
     /// }
     /// ```
-    pub fn new(detector: D, controller: C, filter: F, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
+    pub fn new(detector: D, controller: C, filter: F, settings: HatFollowerSettings, stop_channel: Option<Receiver<i32>>) -> HatFollower<D, C, F> {
         HatFollower {
             p_c: PointConverter::new(controller.get_video_width(), controller.get_video_height()),
             detector,
             controller,
             filter,
             prev_angle: 0.0,
-            center_threshold: 5.0,
             last_params: (0.0, 0.0, 0.0, 0.0),
             stop_channel,
+            settings
         }
     }
 
     fn calculate_speed_to_center(&self, x: i32) -> f64 {
         let frames_to_be_centered = 10.0;
-        if x.abs() as f64 > self.center_threshold {
+        if x.abs() as f64 > self.settings.center_threshold {
             return x as f64 / frames_to_be_centered;
         }
         0.0
@@ -104,7 +110,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     }
 
     fn control_the_drone(&mut self) {
-        let min_change = 0.3;
+        let min_change = self.settings.min_change;
 
         let (new_vx, new_vy) = self.get_new_speeds();
         let ka = self.controller.get_ka();
@@ -141,13 +147,27 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
                         &img,
                         point_for_detector.map(|gp| self.p_c.convert_to_image_coords( &gp)),
                     &self.p_c);
-                    self.detector.draw_on_image(&mut img, &self.p_c);
-                    video_exporter.save_frame("test.mp4", &img);
+
+                    // Drawing on the image
+                    if self.settings.draw_detection {
+                        self.detector.draw_on_image(&mut img, &self.p_c);
+                    }
+                    if self.settings.draw_filter {
+                        self.filter.draw_on_image(&mut img, &self.p_c);
+                    }
+
+                    // Save to video file
+                    if let Some(filename) = &self.settings.save_to_file {
+                        video_exporter.save_frame(filename.as_str(), &img);
+                    }
 
                     self.control_the_drone();
 
-                    imshow("Image", &img).unwrap();
-                    cv::highgui::wait_key(3).unwrap();
+                    // Show video file
+                    if self.settings.show_video {
+                        imshow("Image", &img).unwrap();
+                        cv::highgui::wait_key(3).unwrap();
+                    }
                 }
                 _ => {
                     break;
