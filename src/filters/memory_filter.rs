@@ -27,7 +27,7 @@ impl MemoryFilter {
     }
 }
 
-impl Filter for NoFilter {
+impl Filter for MemoryFilter {
     /// Simply copies the estimation, that it got from the detector. vx and vy are calculated as
     /// a difference of old point and the new point. If there is no new detection, retains the old
     /// one
