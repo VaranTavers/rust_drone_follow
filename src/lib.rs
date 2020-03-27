@@ -88,9 +88,8 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     }
 
     fn calculate_speed_to_center(&self, x: i32) -> f64 {
-        let frames_to_be_centered = 10.0;
         if x.abs() as f64 > self.settings.center_threshold {
-            return x as f64 / frames_to_be_centered;
+            return x as f64 / self.settings.frames_to_be_centered;
         }
         0.0
     }
@@ -99,13 +98,18 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
             return (0.0, 0.0);
         }
         let (x,y) = (self.filter.get_estimated_position().unwrap().x, self.filter.get_estimated_position().unwrap().y);
-        let vx_to_center = self.calculate_speed_to_center(x);
-        let vy_to_center = self.calculate_speed_to_center(y);
+        let mut vx_to_center = self.calculate_speed_to_center(x);
+        let mut vy_to_center = self.calculate_speed_to_center(y);
+
+        if self.settings.counteract_velocity {
+            vx_to_center -= self.filter.get_estimated_vx();
+            vx_to_center -= self.filter.get_estimated_vy();
+        }
 
         let kv = self.controller.get_kv();
         (
-            ((vx_to_center - self.filter.get_estimated_vx()) * kv).min(1.0).max(-1.0),
-            ((vy_to_center - self.filter.get_estimated_vy()) * kv).min(1.0).max(-1.0)
+            ((vx_to_center) * kv).min(1.0).max(-1.0),
+            ((vy_to_center) * kv).min(1.0).max(-1.0)
         )
     }
 
