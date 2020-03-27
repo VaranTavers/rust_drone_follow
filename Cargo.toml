@@ -1,6 +1,6 @@
 [package]
 name = "rust_drone_follow"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["VaranTavers <tasnadi98@freemail.hu>"]
 edition = "2018"
 license = "GPL-3.0-or-later"

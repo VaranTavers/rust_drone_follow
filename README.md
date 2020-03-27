@@ -67,6 +67,8 @@ pub struct HatFollowerSettings {
     pub draw_detection: bool,
     /// Should the program draw the filter markers on the video
     pub draw_filter: bool,
+    /// Experimental feature, tries to counteract the speed of the hat. Might not work well.
+    pub counteract_velocity: bool,
 
 }
 ```
