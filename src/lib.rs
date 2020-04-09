@@ -27,6 +27,9 @@ use crate::video_exporter::VideoExporter;
 use crate::traits::*;
 use crate::point_converter::PointConverter;
 use crate::hat_follower_settings::HatFollowerSettings;
+use opencv::imgproc::{circle, LINE_8};
+use crate::opencv_custom::get_red;
+use crate::text_exporter::TextExporter;
 
 /// The heart of the following mechanism. This struct orchestrates the three parts, in order to
 /// make the drone follow the object. It's only function is run() which initializes the drone, and
@@ -93,6 +96,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         }
         0.0
     }
+
     fn get_new_speeds(&mut self) -> (f64, f64) {
         if let None = self.filter.get_estimated_position() {
             return (0.0, 0.0);
@@ -113,7 +117,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         )
     }
 
-    fn control_the_drone(&mut self) {
+    fn control_the_drone(&mut self, frame_num: usize, text_exporter: &mut TextExporter) {
         let min_change = self.settings.min_change;
 
         let (new_vx, new_vy) = self.get_new_speeds();
@@ -124,9 +128,66 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         // commands if it's not necessary.
         let (old_vx, old_vy, old_vz, old_turn) = self.last_params;
         if (new_vx - old_vx).abs() + (new_vx - old_vy).abs() + (new_turn - old_turn).abs() > min_change {
-            self.controller.move_all(new_vx, new_vy, old_vz, old_turn);
+            if let Some(filename) = &self.settings.save_commands {
+                text_exporter.save_row(filename.as_str(), format!("{} {} {} {} {}\n", frame_num, new_vx, new_vy, old_vz, new_turn));
+            }
+            self.controller.move_all(new_vx, new_vy, old_vz, new_turn);
             self.last_params = (new_vx, new_vy, old_vz, new_turn);
         }
+    }
+
+    fn main_loop(&mut self, img: &mut Mat, frame_num: usize, video_exporter: &mut VideoExporter, text_exporter: &mut TextExporter) {
+        let point_for_detector = self.filter.get_estimated_position();
+        self.detector.detect_new_position(
+            &img,
+            point_for_detector.map(|gp| self.p_c.convert_to_image_coords( &gp)),
+            &self.p_c);
+
+        self.filter.update_estimation(
+            self.detector.get_detected_position(),
+            self.detector.get_detected_angle(),
+            self.detector.get_detection_certainty()
+        );
+
+        // Drawing on the image
+        if self.settings.draw_detection {
+            self.detector.draw_on_image(img, &self.p_c);
+        }
+        if self.settings.draw_filter {
+            self.filter.draw_on_image(img, &self.p_c);
+        }
+        if self.settings.draw_center {
+            circle(img,
+                self.p_c.convert_to_image_coords(&self.p_c.get_center()),
+                self.settings.center_threshold as i32,
+                get_red(),
+                1,
+                LINE_8,
+                0
+            )
+        }
+
+        // Save to video file
+        if let Some(filename) = &self.settings.save_to_file {
+            video_exporter.save_frame(filename.as_str(), img);
+        }
+
+        self.control_the_drone(frame_num, text_exporter);
+
+        // Show video file
+        if self.settings.show_video {
+            imshow("Image", img).unwrap();
+            cv::highgui::wait_key(3).unwrap();
+        }
+    }
+
+    fn have_received_stop_command(&mut self) -> bool {
+        if let Some(receiver) = &mut self.stop_channel {
+            if let Ok(_) = receiver.try_recv() {
+                return true;
+            }
+        }
+        false
     }
 
     /// Initializes the drone, and makes it follow the person wearing the hat. It can only be stopped
@@ -136,53 +197,23 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         self.controller.takeoff();
 
         let mut video_exporter = VideoExporter::new();
+        let mut text_exporter = TextExporter::new();
         let mut video = VideoCapture::new_from_file_with_backend(self.controller.get_opencv_url().as_str(), CAP_ANY).unwrap();
         let mut img = Mat::zeros_size(Size::new(1,1), CV_8U).unwrap().to_mat().unwrap();
+        let mut frame_num = 1;
         loop {
-            if let Some(receiver) = &mut self.stop_channel {
-                if let Ok(_) = receiver.try_recv() {
-                    break;
-                }
+            if self.have_received_stop_command() {
+                break;
             }
             match video.read(&mut img) {
                 Ok(true) => {
-                    let point_for_detector = self.filter.get_estimated_position();
-                    self.detector.detect_new_position(
-                        &img,
-                        point_for_detector.map(|gp| self.p_c.convert_to_image_coords( &gp)),
-                    &self.p_c);
-
-                    self.filter.update_estimation(
-                        self.detector.get_detected_position(),
-                        self.detector.get_detected_angle(),
-                        self.detector.get_detection_certainty()
-                    );
-
-                    // Drawing on the image
-                    if self.settings.draw_detection {
-                        self.detector.draw_on_image(&mut img, &self.p_c);
-                    }
-                    if self.settings.draw_filter {
-                        self.filter.draw_on_image(&mut img, &self.p_c);
-                    }
-
-                    // Save to video file
-                    if let Some(filename) = &self.settings.save_to_file {
-                        video_exporter.save_frame(filename.as_str(), &img);
-                    }
-
-                    self.control_the_drone();
-
-                    // Show video file
-                    if self.settings.show_video {
-                        imshow("Image", &img).unwrap();
-                        cv::highgui::wait_key(3).unwrap();
-                    }
+                    self.main_loop(&mut img, frame_num, &mut video_exporter, &mut text_exporter);
                 }
                 _ => {
                     break;
                 }
             }
+            frame_num += 1;
         }
 
         self.controller.land();
