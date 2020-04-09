@@ -7,6 +7,8 @@ use crate::point_converter::PointConverter;
 
 /// Same as NoFilter, but retains last known position of the hat.
 pub struct MemoryFilter {
+    frames_unknown: usize,
+    max_frames_unknown: usize,
     point: Option<GeometricPoint>,
     angle: f64,
     vx: f64,
@@ -15,9 +17,12 @@ pub struct MemoryFilter {
 }
 
 impl MemoryFilter {
-    /// MemoryFilter doesn't need any parameters since it doesn't do any calculations.
-    pub fn new() -> MemoryFilter {
+    /// MemoryFilter takes as a parameter the number of frames after which it forgets the last
+    /// known position.
+    pub fn new(max_frames_unknown: usize) -> MemoryFilter {
        MemoryFilter {
+           frames_unknown: 0,
+           max_frames_unknown,
            point: None,
            angle: 0.0,
            cert: 0.0,
@@ -30,7 +35,7 @@ impl MemoryFilter {
 impl Filter for MemoryFilter {
     /// Simply copies the estimation, that it got from the detector. vx and vy are calculated as
     /// a difference of old point and the new point. If there is no new detection, retains the old
-    /// one
+    /// one, until given amount of frames.
     fn update_estimation(&mut self, point: Option<GeometricPoint>, angle: Option<f64>, cert: f64) {
         match &self.point {
             Some(p) => {
@@ -41,7 +46,19 @@ impl Filter for MemoryFilter {
             }
             _ => { }
         }
-        self.point = point;
+        match point {
+            Some(p) => {
+                self.frames_unknown = 0;
+                self.point = Some(p);
+            }
+            None => {
+                if self.frames_unknown == self.max_frames_unknown {
+                    self.point = None;
+                    self.frames_unknown = 0;
+                }
+                self.frames_unknown += 1;
+            }
+        }
         if let Some(angle) = angle {
             self.angle = angle;
         }
