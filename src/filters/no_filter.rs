@@ -4,6 +4,8 @@ use cv::core::*;
 use crate::traits::{Filter};
 use crate::geometric_point::GeometricPoint;
 use crate::point_converter::PointConverter;
+use crate::marker_drawer::MarkerDrawer;
+use crate::opencv_custom::get_blue;
 
 /// This is a filler Filter it doesn't calculate any new data (except for vx, vy) and doesn't modify
 /// old data in any meaningful way. It passes forward the data it has got from the detector.
@@ -68,7 +70,9 @@ impl Filter for NoFilter {
         self.cert
     }
 
-    fn draw_on_image(&self, _img: &mut Mat, _p_c: &PointConverter) {
-        
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer) {
+        if let Some(p) = &self.point {
+            m_d.point(p, get_blue());
+        }
     }
 }
