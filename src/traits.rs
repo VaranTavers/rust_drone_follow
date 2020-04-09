@@ -2,6 +2,7 @@ use opencv as cv;
 use cv::core::*;
 use crate::geometric_point::GeometricPoint;
 use crate::point_converter::PointConverter;
+use crate::marker_drawer::MarkerDrawer;
 
 pub trait Detector {
     /// Should return the position of the detected object in the descartes coordinate system.
@@ -17,7 +18,7 @@ pub trait Detector {
     fn detect_new_position(&mut self, img: &Mat, old_pos: Option<Point>, p_c: &PointConverter);
 
     /// Should display visually some parts of the detection. (optional)
-    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer);
 }
 
 pub trait Filter {
@@ -40,7 +41,7 @@ pub trait Filter {
     fn get_estimation_certainty(&self) -> f64;
 
     /// Returns the certainty of the estimation.
-    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer);
 }
 
 pub trait Controller {

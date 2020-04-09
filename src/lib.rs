@@ -5,6 +5,7 @@ pub mod text_exporter;
 
 pub mod geometric_point;
 pub mod opencv_custom;
+pub mod marker_drawer;
 
 pub mod hat_file_reader;
 pub mod hat;
@@ -30,6 +31,7 @@ use crate::hat_follower_settings::HatFollowerSettings;
 use opencv::imgproc::{circle, LINE_8};
 use crate::opencv_custom::get_red;
 use crate::text_exporter::TextExporter;
+use crate::marker_drawer::MarkerDrawer;
 
 /// The heart of the following mechanism. This struct orchestrates the three parts, in order to
 /// make the drone follow the object. It's only function is run() which initializes the drone, and
@@ -137,6 +139,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     }
 
     fn main_loop(&mut self, img: &mut Mat, frame_num: usize, video_exporter: &mut VideoExporter, text_exporter: &mut TextExporter) {
+        let mut m_d = MarkerDrawer::new();
         let point_for_detector = self.filter.get_estimated_position();
         self.detector.detect_new_position(
             &img,
@@ -151,21 +154,16 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
         // Drawing on the image
         if self.settings.draw_detection {
-            self.detector.draw_on_image(img, &self.p_c);
+            self.detector.draw_on_image(&mut m_d);
         }
         if self.settings.draw_filter {
-            self.filter.draw_on_image(img, &self.p_c);
+            self.filter.draw_on_image(&mut m_d);
         }
         if self.settings.draw_center {
-            circle(img,
-                self.p_c.convert_to_image_coords(&self.p_c.get_center()),
-                self.settings.center_threshold as i32,
-                get_red(),
-                1,
-                LINE_8,
-                0
-            );
+            m_d.circle(&self.p_c.get_center(), self.settings.center_threshold as i32, get_red());
         }
+
+        m_d.draw_on_image(img, &self.p_c);
 
         // Save to video file
         if let Some(filename) = &self.settings.save_to_file {

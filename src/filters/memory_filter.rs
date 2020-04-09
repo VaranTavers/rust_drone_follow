@@ -4,6 +4,8 @@ use cv::core::*;
 use crate::traits::{Filter};
 use crate::geometric_point::GeometricPoint;
 use crate::point_converter::PointConverter;
+use crate::marker_drawer::MarkerDrawer;
+use crate::opencv_custom::get_blue;
 
 /// Same as NoFilter, but retains last known position of the hat.
 pub struct MemoryFilter {
@@ -85,7 +87,9 @@ impl Filter for MemoryFilter {
         self.cert
     }
 
-    fn draw_on_image(&self, _img: &mut Mat, _p_c: &PointConverter) {
-        
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer) {
+        if let Some(p) = &self.point {
+            m_d.point(p, get_blue());
+        }
     }
 }

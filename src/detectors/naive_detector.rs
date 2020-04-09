@@ -8,6 +8,7 @@ use crate::traits::{Detector};
 use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
 use crate::point_converter::PointConverter;
 use crate::hat::Hat;
+use crate::marker_drawer::MarkerDrawer;
 
 const PI: f64 = std::f64::consts::PI;
 
@@ -122,38 +123,31 @@ impl Detector for NaiveDetector {
             }
             None => {
                 self.cert = 0.0;
+                self.point = None;
             }
         }
     }
 
     /// Call this only if you want to visualize the detected points, and the angle.
-    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter) {
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer) {
         let k = 100;
         match &self.point {
             Some(p) => {
-                let c_point = p_c.convert_to_image_coords(&p);
                 let other_point = match self.angle {
                     TanableAngle::Angle(angle) => {
-                        Point::new(c_point.x + k, c_point.y + (k as f64 * angle.tan()) as i32)
+                        GeometricPoint::new(p.x + k, p.y + (k as f64 * angle.tan()) as i32)
                     }
                     TanableAngle::Vertical => {
-                        Point::new(c_point.x, c_point.y - k)
+                        GeometricPoint::new(p.x, p.y - k)
                     }
                 };
 
-                line_c(img,&c_point, &other_point, get_red());
+                m_d.line(p, &other_point, get_red());
 
                 let (cgp, ogp) = &self.hat_side_points;
-                let (closest, other) = (p_c.convert_to_image_coords(cgp), p_c.convert_to_image_coords(ogp));
-                circle(img, closest.clone(), 5, Scalar::new(0.0, 100.0, 0.0, 255.0), 2, LINE_8, 0).unwrap();
-                line_c(img, &closest, &other, get_green());
-                circle(img,
-                       other.clone(),
-                       5,
-                       get_green(),
-                       2,
-                       LINE_8,
-                       0).unwrap();
+                m_d.point(cgp, Scalar::new(0.0, 100.0, 0.0, 255.0));
+                m_d.line(cgp, ogp, get_green());
+                m_d.point(ogp, get_green());
             }
             None => {
             }
