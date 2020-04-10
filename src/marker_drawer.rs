@@ -15,23 +15,28 @@ pub struct MarkerDrawer {
 }
 
 impl MarkerDrawer {
+    // If you need to use this in your own code, you can instantiate one with new()
     pub fn new() -> MarkerDrawer {
         MarkerDrawer {
             markers: Vec::new(),
         }
     }
+    // Draws a small circle with radius of 5 and thickness 2, when draw on image is called
     pub fn point(&mut self, point: &GeometricPoint, color: Scalar) {
         self.markers.push(Marker::Point(point.clone(), color));
     }
 
+    // Draws a line with thickness 1, between the two given points when draw on image is called
     pub fn line(&mut self, point1: &GeometricPoint, point2: &GeometricPoint, color: Scalar) {
         self.markers.push(Marker::Line(point1.clone(), point2.clone(), color));
     }
 
+    // Draws a small circle with the given radius and thickness 1, when draw on image is called
     pub fn circle(&mut self, point: &GeometricPoint, radius: i32, color: Scalar) {
         self.markers.push(Marker::Circle(point.clone(), radius, color));
     }
 
+    // Draws the saved Markers on the given image, requires a PointConverter.
     pub fn draw_on_image(&mut self, img: &mut Mat, p_c: &PointConverter) {
         for marker in self.markers.iter() {
             match marker {

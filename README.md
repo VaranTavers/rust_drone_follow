@@ -57,16 +57,20 @@ pub struct HatFollowerSettings {
     pub center_threshold: f64,
     /// Minimum amount of change in speeds needed to issue a new move command.
     pub min_change: f64,
-    /// Under how many frames(as time measurement) we want the drone to reach the center
+    /// Under how many frames(as time measurement) we want the drone to reach the center.
     pub frames_to_be_centered: f64,
-    /// Should the program save the video
+    /// Sets whether the program should save the video.
     pub save_to_file: Option<String>,
-    /// Should the program show the image real-time
+    /// Sets whether the program should save commands in a file denoting the frame
+    pub save_commands: Option<String>,
+    /// Sets whether the program should show the image real-time.
     pub show_video: bool,
-    /// Should the program draw the detection markers on the video
+    /// Sets whether the program should draw the detection markers on the video.
     pub draw_detection: bool,
-    /// Should the program draw the filter markers on the video
+    /// Sets whether the program should draw the filter markers on the video.
     pub draw_filter: bool,
+    /// Sets whether the program should draw a circle marking the center_threshold.
+    pub draw_center: bool,
     /// Experimental feature, tries to counteract the speed of the hat. Might not work well.
     pub counteract_velocity: bool,
 
@@ -94,7 +98,7 @@ pub trait Detector {
     fn detect_new_position(&mut self, img: &Mat, old_pos: Option<Point>, p_c: &PointConverter);
 
     /// Should display visually some parts of the detection. (optional)
-    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer);
 }
 ```
 
@@ -154,16 +158,21 @@ pub trait Controller {
 
     /// Should return the video's height in pixels
     fn get_video_height(&self) -> usize;
+
     /// Should return the video's width in pixels
     fn get_video_width(&self) -> usize;
+
     /// Should return a link to an external resource that OpenCV can read
     fn get_opencv_url(&self) -> String;
+
     /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
     /// time difference between frames
     fn get_kv(&self) -> f64;
+
     /// Conversion rate between da/dt and drone turn speed which is in (-1.0, 1.0), where dt is the
     /// time difference between frames, and da is the angle difference between frames.
     fn get_ka(&self) -> f64;
+
 }
 ```
 
@@ -203,17 +212,21 @@ pub trait Filter {
 
     /// Returns the estimated position of the hat.
     fn get_estimated_position(&self) -> Option<GeometricPoint>;
+
     /// Returns the estimated angle of the hat.
     fn get_estimated_angle(&self) -> f64;
+
     /// Returns the estimated horizontal speed of the hat.
     fn get_estimated_vx(&self) -> f64;
+
     /// Returns the estimated vertical speed of the hat.
     fn get_estimated_vy(&self) -> f64;
+
     /// Returns the certainty of the estimation.
     fn get_estimation_certainty(&self) -> f64;
 
     /// Returns the certainty of the estimation.
-    fn draw_on_image(&self, img: &mut Mat, p_c: &PointConverter);
+    fn draw_on_image(&self, m_d: &mut MarkerDrawer);
 }
 ```
 
@@ -230,16 +243,36 @@ let no_filter = NoFilter::new();
 ### MemoryFilter
 
 This is the same as NoFilter with the exception that in case the point is no longer detected (went off-frame) it retains 
-it's last known position (this way the drone will try to move towards it).
+it's last known position (this way the drone will try to move towards it), until a given amount of frames.
 
 Example:
 ```rust
-let memory_filter = MemoryFilter::new();
+let memory_filter = MemoryFilter::new(100);
 ```
 
 ### KalmanFilter
 
 This part is not yet implemented. Check back later.
+
+## Drawing on images with custom Detectors/Filters
+
+As you may have noticed drawing on an image is done by using a MarkerDrawer struct, that saves the drawing commands in 
+itself and then draws them on the picture. The following functions are usable:
+
+```rust
+impl MarkerDrawer {
+    // If you need to use this in your own code, you can instantiate one with new()
+    pub fn new() -> MarkerDrawer { /*...*/ }
+    // Draws a small circle with radius of 5 and thickness 2, when draw on image is called
+    pub fn point(&mut self, point: &GeometricPoint, color: Scalar) { /*...*/ }
+    // Draws a line with thickness 1, between the two given points when draw on image is called
+    pub fn line(&mut self, point1: &GeometricPoint, point2: &GeometricPoint, color: Scalar) { /*...*/ }
+    // Draws a small circle with the given radius and thickness 1, when draw on image is called
+    pub fn circle(&mut self, point: &GeometricPoint, radius: i32, color: Scalar) { /*...*/ }
+    // Draws the saved Markers on the given image, requires a PointConverter.
+    pub fn draw_on_image(&mut self, img: &mut Mat, p_c: &PointConverter) { /*...*/ }
+}
+```
 
 ## Other useful utilities:
 
