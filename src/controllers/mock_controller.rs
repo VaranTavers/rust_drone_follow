@@ -7,7 +7,7 @@ use opencv::core::Mat;
 ///
 /// You can use it to test the tracking system on a prerecorded video.
 pub struct MockController {
-    video_capture: VideoCapture,
+    filename: String,
     height: usize,
     width: usize,
 }
@@ -23,7 +23,7 @@ impl MockController {
     /// ```
     pub fn new(filename: &str, width: usize, height: usize) -> MockController {
         MockController {
-            video_capture: VideoCapture::new_from_file_with_backend(filename, CAP_ANY).unwrap(),
+            filename: String::from(filename),
             height,
             width
         }
@@ -56,9 +56,9 @@ impl Controller for MockController {
         self.width
     }
 
-    /// Should return the next video frame from the camera
-    fn get_next_frame(&mut self, img: &mut Mat) -> opencv::Result<bool> {
-        self.video_capture.read(img)
+    /// Should return a link to an external resource that OpenCV can read
+    fn get_opencv_url(&self) -> String {
+        self.filename.clone()
     }
 
     /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
