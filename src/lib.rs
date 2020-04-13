@@ -94,27 +94,28 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
     // Calculates the necessary speed that is needed for the hat to be in the center of the frame.
     // It is in dx/dt where dx is the coordinate difference and dt is the time between frames.
-    fn calculate_speed_to_center(&self, x: i32) -> f64 {
-        if x.abs() as f64 > self.settings.center_threshold {
-            return x as f64 / self.settings.frames_to_be_centered;
+    fn calculate_speed_to_center(&self, dist: i32) -> f64 {
+        if dist.abs() as f64 > self.settings.center_threshold {
+            return dist as f64 / self.settings.frames_to_be_centered;
         }
         0.0
     }
 
-    fn get_new_speeds(&mut self) -> (f64, f64) {
+    fn calculate_new_vs(&mut self) -> (f64, f64) {
+        // If there is no detected point, the drone should stop.
         if let None = self.filter.get_estimated_position() {
             return (0.0, 0.0);
         }
-        let (x,y) = (self.filter.get_estimated_position().unwrap().x, self.filter.get_estimated_position().unwrap().y);
-        let mut vx_to_center = self.calculate_speed_to_center(x);
-        let mut vy_to_center = self.calculate_speed_to_center(y);
+
+        let est_position = self.filter.get_estimated_position().unwrap();
+        let mut vx_to_center = self.calculate_speed_to_center(est_position.x);
+        let mut vy_to_center = self.calculate_speed_to_center(est_position.y);
 
         // Feature that needs testing.
         if self.settings.counteract_velocity {
             vx_to_center -= self.filter.get_estimated_vx();
             vy_to_center -= self.filter.get_estimated_vy();
         }
-
 
         let kv = self.controller.get_kv();
         (
@@ -126,7 +127,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     fn control_the_drone(&mut self, frame_num: usize, text_exporter: &mut TextExporter) {
         let min_change = self.settings.min_change;
 
-        let (new_vx, new_vy) = self.get_new_speeds();
+        let (new_vx, new_vy) = self.calculate_new_vs();
         let ka = self.controller.get_ka();
         let new_turn = ((self.filter.get_estimated_angle() - self.prev_angle) * ka).min(1.0).max(-1.0);
 
@@ -167,6 +168,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
             m_d.circle(&self.p_c.get_center(), self.settings.center_threshold as i32, get_red());
         }
 
+        // Applies the given markers to the image.
         m_d.draw_on_image(img, &self.p_c);
 
         // Save to video file
