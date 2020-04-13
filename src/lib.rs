@@ -92,6 +92,8 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         }
     }
 
+    // Calculates the necessary speed that is needed for the hat to be in the center of the frame.
+    // It is in dx/dt where dx is the coordinate difference and dt is the time between frames.
     fn calculate_speed_to_center(&self, x: i32) -> f64 {
         if x.abs() as f64 > self.settings.center_threshold {
             return x as f64 / self.settings.frames_to_be_centered;
@@ -107,10 +109,12 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         let mut vx_to_center = self.calculate_speed_to_center(x);
         let mut vy_to_center = self.calculate_speed_to_center(y);
 
+        // Feature that needs testing.
         if self.settings.counteract_velocity {
             vx_to_center -= self.filter.get_estimated_vx();
-            vx_to_center -= self.filter.get_estimated_vy();
+            vy_to_center -= self.filter.get_estimated_vy();
         }
+
 
         let kv = self.controller.get_kv();
         (
@@ -129,7 +133,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         // Check if a minimum change of speed is reached, in order not to have an overflow of move
         // commands if it's not necessary.
         let (old_vx, old_vy, old_vz, old_turn) = self.last_params;
-        if (new_vx - old_vx).abs() + (new_vx - old_vy).abs() + (new_turn - old_turn).abs() > min_change {
+        if (new_vx - old_vx).abs() + (new_vy - old_vy).abs() + (new_turn - old_turn).abs() > min_change {
             if let Some(filename) = &self.settings.save_commands {
                 text_exporter.save_row(filename.as_str(), format!("{} {} {} {} {}\n", frame_num, new_vx, new_vy, old_vz, new_turn));
             }
