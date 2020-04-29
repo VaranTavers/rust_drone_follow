@@ -1,9 +1,9 @@
 use opencv as cv;
 use cv::core::*;
-use opencv::imgproc::{contour_area, LINE_8, circle};
+use opencv::imgproc::{contour_area};
 use opencv::types::{VectorOfPoint};
 
-use crate::opencv_custom::{get_contours, line_c, get_red, get_green};
+use crate::opencv_custom::{get_contours, get_red, get_green};
 use crate::traits::{Detector};
 use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
 use crate::point_converter::PointConverter;

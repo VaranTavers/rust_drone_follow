@@ -1,6 +1,4 @@
 use crate::traits::Controller;
-use opencv::videoio::{VideoCapture, CAP_ANY};
-use opencv::core::Mat;
 
 /// The MockController acts as a false controller that provides a video file to the MainFrame along
 /// with it's resolution, and does nothing on commands given to it.

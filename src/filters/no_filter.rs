@@ -1,9 +1,5 @@
-use opencv as cv;
-
-use cv::core::*;
 use crate::traits::{Filter};
 use crate::geometric_point::GeometricPoint;
-use crate::point_converter::PointConverter;
 use crate::marker_drawer::MarkerDrawer;
 use crate::opencv_custom::get_blue;
 

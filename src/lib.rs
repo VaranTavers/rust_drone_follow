@@ -28,7 +28,6 @@ use crate::video_exporter::VideoExporter;
 use crate::traits::*;
 use crate::point_converter::PointConverter;
 use crate::hat_follower_settings::HatFollowerSettings;
-use opencv::imgproc::{circle, LINE_8};
 use crate::opencv_custom::get_red;
 use crate::text_exporter::TextExporter;
 use crate::marker_drawer::MarkerDrawer;
@@ -202,7 +201,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
         let mut video_exporter = VideoExporter::new();
         let mut text_exporter = TextExporter::new();
-        let mut video = VideoCapture::new_from_file_with_backend(self.controller.get_opencv_url().as_str(), CAP_ANY).unwrap();
+        let mut video = VideoCapture::from_file(self.controller.get_opencv_url().as_str(), CAP_ANY).unwrap();
         let mut img = Mat::zeros_size(Size::new(1,1), CV_8U).unwrap().to_mat().unwrap();
         let mut frame_num = 1;
         loop {
