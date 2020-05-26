@@ -222,3 +222,4 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         self.controller.shutdown();
     }
 }
+
