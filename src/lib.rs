@@ -201,14 +201,13 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
         let mut video_exporter = VideoExporter::new();
         let mut text_exporter = TextExporter::new();
-        let mut video = VideoCapture::from_file(self.controller.get_opencv_url().as_str(), CAP_ANY).unwrap();
         let mut img = Mat::zeros_size(Size::new(1,1), CV_8U).unwrap().to_mat().unwrap();
         let mut frame_num = 1;
         loop {
             if self.have_received_stop_command() {
                 break;
             }
-            match video.read(&mut img) {
+            match self.controller.get_next_frame(&mut img) {
                 Ok(true) => {
                     self.main_loop(&mut img, frame_num, &mut video_exporter, &mut text_exporter);
                 }

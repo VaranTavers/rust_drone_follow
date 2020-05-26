@@ -1,4 +1,6 @@
 use crate::traits::Controller;
+use opencv::core::Mat;
+use opencv::videoio::{VideoCapture, VideoCaptureTrait, CAP_ANY};
 
 /// The MockController acts as a false controller that provides a video file to the MainFrame along
 /// with it's resolution, and does nothing on commands given to it.
@@ -6,6 +8,7 @@ use crate::traits::Controller;
 /// You can use it to test the tracking system on a prerecorded video.
 pub struct MockController {
     filename: String,
+    video: VideoCapture,
     height: usize,
     width: usize,
 }
@@ -22,6 +25,7 @@ impl MockController {
     pub fn new(filename: &str, width: usize, height: usize) -> MockController {
         MockController {
             filename: String::from(filename),
+            video: VideoCapture::from_file(filename, CAP_ANY).unwrap(),
             height,
             width
         }
@@ -54,9 +58,10 @@ impl Controller for MockController {
         self.width
     }
 
-    /// Should return a link to an external resource that OpenCV can read
-    fn get_opencv_url(&self) -> String {
-        self.filename.clone()
+
+    /// Should return current image from drone
+    fn get_next_frame(&mut self, img: &mut Mat) -> opencv::Result<bool> {
+        self.video.read(img)
     }
 
     /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the

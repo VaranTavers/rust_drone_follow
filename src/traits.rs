@@ -67,8 +67,8 @@ pub trait Controller {
     /// Should return the video's width in pixels
     fn get_video_width(&self) -> usize;
 
-    /// Should return a link to an external resource that OpenCV can read
-    fn get_opencv_url(&self) -> String;
+    /// Should return current image from drone
+    fn get_next_frame(&mut self, img: &mut Mat) -> opencv::Result<bool>;
 
     /// Conversion rate between pixels/dt and drone speed which is in (-1.0, 1.0), where dt is the
     /// time difference between frames
