@@ -230,7 +230,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
             frame_num += 1;
         }
 
-        destroy_all_windows();
+        destroy_all_windows().unwrap();
         self.controller.land();
         self.controller.shutdown();
     }
