@@ -128,14 +128,10 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         let ka = self.controller.get_ka();
 
         let ninety = ((PI / 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
-        let tninety = ((3.0 * PI / 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
         let mninety = ((PI / - 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
 
-        if ninety.abs() <= tninety.abs() && ninety.abs() <= mninety.abs() {
+        if ninety.abs() <= mninety.abs() {
             return ninety;
-        }
-        if tninety.abs() <= mninety.abs() {
-            return tninety;
         }
         mninety
     }
@@ -234,6 +230,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
             frame_num += 1;
         }
 
+        destroy_all_windows();
         self.controller.land();
         self.controller.shutdown();
     }

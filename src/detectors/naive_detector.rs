@@ -78,7 +78,7 @@ impl NaiveDetector {
             return TanableAngle::Vertical;
         }
 
-        TanableAngle::Angle((1.0 / m).atan())
+        TanableAngle::Angle((- 1.0 / m).atan())
     }
 }
 
