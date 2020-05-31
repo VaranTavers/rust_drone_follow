@@ -31,6 +31,7 @@ use crate::hat_follower_settings::HatFollowerSettings;
 use crate::opencv_custom::get_red;
 use crate::text_exporter::TextExporter;
 use crate::marker_drawer::MarkerDrawer;
+use std::f64::consts::PI;
 
 /// The heart of the following mechanism. This struct orchestrates the three parts, in order to
 /// make the drone follow the object. It's only function is run() which initializes the drone, and
@@ -123,12 +124,27 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         )
     }
 
+    fn calculate_new_turn(&mut self) -> f64 {
+        let ka = self.controller.get_ka();
+
+        let ninety = ((PI / 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
+        let tninety = ((3.0 * PI / 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
+        let mninety = ((PI / - 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
+
+        if ninety.abs() <= tninety.abs() && ninety.abs() <= mninety.abs() {
+            return ninety;
+        }
+        if tninety.abs() <= mninety.abs() {
+            return tninety;
+        }
+        mninety
+    }
+
     fn control_the_drone(&mut self, frame_num: usize, text_exporter: &mut TextExporter) {
         let min_change = self.settings.min_change;
 
         let (new_vx, new_vy) = self.calculate_new_vs();
-        let ka = self.controller.get_ka();
-        let new_turn = ((self.filter.get_estimated_angle() - self.prev_angle) * ka).min(1.0).max(-1.0);
+        let new_turn = self.calculate_new_turn();
 
         // Check if a minimum change of speed is reached, in order not to have an overflow of move
         // commands if it's not necessary.
