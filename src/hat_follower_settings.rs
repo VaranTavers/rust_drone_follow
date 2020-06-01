@@ -21,6 +21,8 @@ pub struct HatFollowerSettings {
     pub draw_center: bool,
     /// Experimental feature, tries to counteract the speed of the hat. Might not work well.
     pub counteract_velocity: bool,
+    /// Turn only when above the target
+    pub turn_only_when_centered: bool,
 
 }
 
@@ -38,6 +40,7 @@ impl HatFollowerSettings {
             draw_filter: false,
             draw_center: false,
             counteract_velocity: false,
+            turn_only_when_centered: true,
         }
     }
 
@@ -54,6 +57,7 @@ impl HatFollowerSettings {
             draw_filter: true,
             draw_center: true,
             counteract_velocity: false,
+            turn_only_when_centered: true,
         }
     }
 
@@ -70,6 +74,7 @@ impl HatFollowerSettings {
             draw_filter: false,
             draw_center: false,
             counteract_velocity: false,
+            turn_only_when_centered: true,
         }
     }
 }

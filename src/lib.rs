@@ -126,21 +126,27 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
 
     fn calculate_new_turn(&mut self) -> f64 {
         let ka = self.controller.get_ka();
-
         let ninety = ((PI / 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
-        let mninety = ((PI / - 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
+        let minus_ninety = ((PI / - 2.0 - self.filter.get_estimated_angle()) * ka).min(1.0).max(-1.0);
 
-        if ninety.abs() <= mninety.abs() {
-            return ninety;
+        // NOTE:
+        // Here is a (-) that I don't yet fully understand. Theoretically `ninety` should always be positive, and so should the result.
+        // However practice doesn't seem to support the idea.
+        if ninety.abs() <= minus_ninety.abs() {
+            return -ninety;
         }
-        mninety
+        -minus_ninety
     }
 
     fn control_the_drone(&mut self, frame_num: usize, text_exporter: &mut TextExporter) {
         let min_change = self.settings.min_change;
 
         let (new_vx, new_vy) = self.calculate_new_vs();
-        let new_turn = self.calculate_new_turn();
+        let new_turn= if new_vx.abs() + new_vy.abs() < 0.0 || !self.settings.turn_only_when_centered {
+                self.calculate_new_turn()
+            } else {
+                0.0
+            };
 
         // Check if a minimum change of speed is reached, in order not to have an overflow of move
         // commands if it's not necessary.
