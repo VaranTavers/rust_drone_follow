@@ -14,7 +14,7 @@ use opencv::core::*;
 use opencv::highgui::*;
 
 use crate::traits::*;
-use crate::hat_follower_settings::HatFollowerSettings;
+pub use hat_follower_settings::HatFollowerSettings;
 
 use crate::utils::video_exporter::VideoExporter;
 use crate::utils::point_converter::PointConverter;
@@ -54,7 +54,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     /// use rust_drone_follow::models::lab_color::LabColor;
     ///
     /// use rust_drone_follow::HatFollower;
-    /// use rust_drone_follow::hat_follower_settings::HatFollowerSettings;
+    /// use rust_drone_follow::HatFollowerSettings;
     ///
     /// fn main() {
     ///     let mut s = HatFollower::new(
