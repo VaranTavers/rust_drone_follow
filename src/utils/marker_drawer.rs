@@ -1,8 +1,9 @@
-use crate::geometric_point::GeometricPoint;
-use crate::point_converter::PointConverter;
-
 use opencv::core::{Scalar, Mat};
 use opencv::imgproc::{circle, LINE_8, line};
+
+use crate::models::geometric_point::GeometricPoint;
+
+use crate::utils::point_converter::PointConverter;
 
 enum Marker {
     Point(GeometricPoint, Scalar),

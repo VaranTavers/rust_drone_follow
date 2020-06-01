@@ -1,9 +1,9 @@
-use opencv as cv;
-use cv::core::*;
-use cv::videoio::*;
 use std::thread;
 use std::sync::mpsc::{self, Sender, Receiver};
 use std::collections::HashMap;
+
+use opencv::core::*;
+use opencv::videoio::*;
 
 /// Can be used to export frames to a video file. The saving runs on a different thread in order
 /// not to block the main thread.

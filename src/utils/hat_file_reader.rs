@@ -1,6 +1,7 @@
-use crate::hat::Hat;
 use std::fs;
-use crate::opencv_custom::LabColor;
+
+use crate::models::hat::Hat;
+use crate::models::lab_color::LabColor;
 
 macro_rules! parse_input {
     ($x:expr, $t:ident) => ($x.trim().parse::<$t>().unwrap())

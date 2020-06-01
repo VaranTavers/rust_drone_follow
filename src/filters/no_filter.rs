@@ -1,7 +1,9 @@
 use crate::traits::{Filter};
-use crate::geometric_point::GeometricPoint;
-use crate::marker_drawer::MarkerDrawer;
-use crate::opencv_custom::get_blue;
+
+use crate::models::geometric_point::GeometricPoint;
+
+use crate::utils::marker_drawer::MarkerDrawer;
+use crate::utils::opencv_custom::get_blue;
 
 /// This is a filler Filter it doesn't calculate any new data (except for vx, vy) and doesn't modify
 /// old data in any meaningful way. It passes forward the data it has got from the detector.

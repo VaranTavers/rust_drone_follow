@@ -1,7 +1,9 @@
 use crate::traits::{Filter};
-use crate::geometric_point::GeometricPoint;
-use crate::marker_drawer::MarkerDrawer;
-use crate::opencv_custom::get_blue;
+
+use crate::models::geometric_point::GeometricPoint;
+
+use crate::utils::marker_drawer::MarkerDrawer;
+use crate::utils::opencv_custom::get_blue;
 
 /// Same as NoFilter, but retains last known position of the hat.
 pub struct MemoryFilter {

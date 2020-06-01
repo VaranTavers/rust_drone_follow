@@ -1,4 +1,4 @@
-use crate::opencv_custom::LabColor;
+use crate::models::lab_color::LabColor;
 
 /// This struct contains the necessary information for a NaiveDetector about the hat that the
 /// person, that should be followed, wears. It requires two Color coordinates from the Lab color space
@@ -14,8 +14,8 @@ impl Hat {
     ///
     /// Usage:
     /// ```
-    /// use rust_drone_follow::hat::Hat;
-    /// use rust_drone_follow::opencv_custom::LabColor;
+    /// use rust_drone_follow::model::hat::Hat;
+    /// use rust_drone_follow::model::lab_color::LabColor;
     /// // ...
     /// # fn main() {
     ///    let hat = Hat::new(

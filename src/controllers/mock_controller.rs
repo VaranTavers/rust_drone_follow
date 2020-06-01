@@ -1,13 +1,13 @@
-use crate::traits::Controller;
 use opencv::core::Mat;
 use opencv::videoio::{VideoCapture, VideoCaptureTrait, CAP_ANY};
+
+use crate::traits::Controller;
 
 /// The MockController acts as a false controller that provides a video file to the MainFrame along
 /// with it's resolution, and does nothing on commands given to it.
 ///
 /// You can use it to test the tracking system on a prerecorded video.
 pub struct MockController {
-    filename: String,
     video: VideoCapture,
     height: usize,
     width: usize,
@@ -24,7 +24,6 @@ impl MockController {
     /// ```
     pub fn new(filename: &str, width: usize, height: usize) -> MockController {
         MockController {
-            filename: String::from(filename),
             video: VideoCapture::from_file(filename, CAP_ANY).unwrap(),
             height,
             width

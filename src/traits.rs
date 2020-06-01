@@ -1,8 +1,9 @@
-use opencv as cv;
-use cv::core::*;
-use crate::geometric_point::GeometricPoint;
-use crate::point_converter::PointConverter;
-use crate::marker_drawer::MarkerDrawer;
+use opencv::core::*;
+
+use crate::models::geometric_point::GeometricPoint;
+
+use crate::utils::point_converter::PointConverter;
+use crate::utils::marker_drawer::MarkerDrawer;
 
 pub trait Detector {
     /// Should return the position of the detected object in the descartes coordinate system.

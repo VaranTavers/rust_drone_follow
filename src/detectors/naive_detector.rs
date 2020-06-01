@@ -1,14 +1,15 @@
-use opencv as cv;
-use cv::core::*;
+use opencv::core::*;
 use opencv::imgproc::{contour_area};
 use opencv::types::{VectorOfPoint};
 
-use crate::opencv_custom::{get_contours, get_red, get_green};
 use crate::traits::{Detector};
-use crate::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
-use crate::point_converter::PointConverter;
-use crate::hat::Hat;
-use crate::marker_drawer::MarkerDrawer;
+
+use crate::models::hat::Hat;
+use crate::models::geometric_point::{GeometricPoint, get_center_of_geometric_points, get_closest_from_geometric_points_to_point};
+
+use crate::utils::point_converter::PointConverter;
+use crate::utils::opencv_custom::{get_contours, get_red, get_green};
+use crate::utils::marker_drawer::MarkerDrawer;
 
 const PI: f64 = std::f64::consts::PI;
 
@@ -45,8 +46,8 @@ impl NaiveDetector {
     ///
     ///```
     /// use rust_drone_follow::detectors::naive_detector::NaiveDetector;
-    /// use rust_drone_follow::opencv_custom::LabColor;
-    /// use rust_drone_follow::hat::Hat;
+    /// use rust_drone_follow::model::lab_color::LabColor;
+    /// use rust_drone_follow::model::hat::Hat;
     /// // ...
     /// # fn main() {
     ///     let hat = Hat::new(

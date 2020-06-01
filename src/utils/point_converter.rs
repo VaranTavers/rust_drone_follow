@@ -1,7 +1,6 @@
-use opencv as cv;
-use cv::core::*;
+use opencv::core::*;
 
-use crate::geometric_point::GeometricPoint;
+use crate::models::geometric_point::GeometricPoint;
 
 pub struct PointConverter {
     width: usize,
@@ -16,7 +15,7 @@ impl PointConverter {
     /// Usage:
     ///
     /// ```
-    ///     use rust_drone_follow::point_converter::PointConverter;
+    ///     use rust_drone_follow::utils::point_converter::PointConverter;
     /// // ...
     /// # fn main() {
     ///     let p_c = PointConverter::new(640, 368);
@@ -38,8 +37,8 @@ impl PointConverter {
     /// Usage:
     ///
     /// ```
-    /// #    use rust_drone_follow::point_converter::PointConverter;
     ///      use opencv::core::Point;
+    /// #    use rust_drone_follow::utils::point_converter::PointConverter;
     /// // ...
     /// # fn main() {
     /// #   let p_c = PointConverter::new(640, 368);
@@ -59,8 +58,8 @@ impl PointConverter {
     /// Usage:
     ///
     /// ```
-    /// #    use rust_drone_follow::point_converter::PointConverter;
-    /// use rust_drone_follow::geometric_point::GeometricPoint;
+    /// # use rust_drone_follow::utils::point_converter::PointConverter;
+    /// use rust_drone_follow::models::geometric_point::GeometricPoint;
     /// // ...
     /// # fn main() {
     /// #    let p_c = PointConverter::new(640, 368);
@@ -78,9 +77,11 @@ impl PointConverter {
 
 #[cfg(test)]
 mod tests {
-    use super::PointConverter;
     use opencv::core::Point;
-    use crate::geometric_point::GeometricPoint;
+
+    use crate::models::geometric_point::GeometricPoint;
+
+    use super::PointConverter;
 
     #[test]
     fn center_x_should_be_zero() {

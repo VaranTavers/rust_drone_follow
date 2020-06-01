@@ -1,37 +1,29 @@
-pub mod hat_follower_settings;
-
-pub mod video_exporter;
-pub mod text_exporter;
-
-pub mod geometric_point;
-pub mod opencv_custom;
-pub mod marker_drawer;
-
-pub mod hat_file_reader;
-pub mod hat;
-
-pub mod traits;
-
-pub mod point_converter;
 pub mod detectors;
 pub mod filters;
 pub mod controllers;
+pub mod models;
+pub mod utils;
+
+pub mod hat_follower_settings;
+pub mod traits;
 
 use std::sync::mpsc::Receiver;
+use std::f64::consts::PI;
 
 use opencv as cv;
-use cv::core::*;
-use cv::highgui::*;
-use cv::videoio::*;
+use opencv::core::*;
+use opencv::highgui::*;
+use opencv::videoio::*;
 
-use crate::video_exporter::VideoExporter;
 use crate::traits::*;
-use crate::point_converter::PointConverter;
 use crate::hat_follower_settings::HatFollowerSettings;
-use crate::opencv_custom::get_red;
-use crate::text_exporter::TextExporter;
-use crate::marker_drawer::MarkerDrawer;
-use std::f64::consts::PI;
+
+use crate::utils::video_exporter::VideoExporter;
+use crate::utils::point_converter::PointConverter;
+use crate::utils::opencv_custom::get_red;
+use crate::utils::text_exporter::TextExporter;
+use crate::utils::marker_drawer::MarkerDrawer;
+
 
 /// The heart of the following mechanism. This struct orchestrates the three parts, in order to
 /// make the drone follow the object. It's only function is run() which initializes the drone, and
@@ -58,10 +50,12 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
     /// Usage example:
     /// ```
     /// use rust_drone_follow::detectors::naive_detector::NaiveDetector;
-    /// use rust_drone_follow::hat::Hat;
-    /// use rust_drone_follow::opencv_custom::LabColor;
-    /// use rust_drone_follow::controllers::mock_controller::MockController;
     /// use rust_drone_follow::filters::no_filter::NoFilter;
+    /// use rust_drone_follow::controllers::mock_controller::MockController;
+    ///
+    /// use rust_drone_follow::models::hat::Hat;
+    /// use rust_drone_follow::models::lab_color::LabColor;
+    ///
     /// use rust_drone_follow::HatFollower;
     /// use rust_drone_follow::hat_follower_settings::HatFollowerSettings;
     ///
@@ -198,7 +192,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         // Show video file
         if self.settings.show_video {
             imshow("Image", img).unwrap();
-            cv::highgui::wait_key(3).unwrap();
+            opencv::highgui::wait_key(3).unwrap();
         }
     }
 
