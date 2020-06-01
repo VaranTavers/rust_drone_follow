@@ -46,8 +46,8 @@ impl NaiveDetector {
     ///
     ///```
     /// use rust_drone_follow::detectors::naive_detector::NaiveDetector;
-    /// use rust_drone_follow::model::lab_color::LabColor;
-    /// use rust_drone_follow::model::hat::Hat;
+    /// use rust_drone_follow::models::lab_color::LabColor;
+    /// use rust_drone_follow::models::hat::Hat;
     /// // ...
     /// # fn main() {
     ///     let hat = Hat::new(
@@ -168,7 +168,7 @@ fn get_points_from_two_sides(center_point: &GeometricPoint, contour: &Vec<Geomet
     (closest_point, other_point)
 }
 
-fn get_best_fit_contour(contours: &cv::types::VectorOfVectorOfPoint, size_avg: f64) -> Option<(Vec<Point>, f64)> {
+fn get_best_fit_contour(contours: &opencv::types::VectorOfVectorOfPoint, size_avg: f64) -> Option<(Vec<Point>, f64)> {
     let c_with_area = contours.iter()
         .map(|contour| (contour_area(&contour, false).unwrap(), contour))
         .collect::<Vec<(f64, VectorOfPoint)>>();

@@ -10,10 +10,8 @@ pub mod traits;
 use std::sync::mpsc::Receiver;
 use std::f64::consts::PI;
 
-use opencv as cv;
 use opencv::core::*;
 use opencv::highgui::*;
-use opencv::videoio::*;
 
 use crate::traits::*;
 use crate::hat_follower_settings::HatFollowerSettings;
@@ -33,7 +31,6 @@ pub struct HatFollower<D: Detector, C: Controller, F: Filter> {
     controller: C,
     filter: F,
     p_c: PointConverter,
-    prev_angle: f64,
     last_params: (f64, f64, f64, f64),
     stop_channel: Option<Receiver<i32>>,
     settings: HatFollowerSettings,
@@ -79,7 +76,6 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
             detector,
             controller,
             filter,
-            prev_angle: 0.0,
             last_params: (0.0, 0.0, 0.0, 0.0),
             stop_channel,
             settings

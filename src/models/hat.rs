@@ -14,8 +14,8 @@ impl Hat {
     ///
     /// Usage:
     /// ```
-    /// use rust_drone_follow::model::hat::Hat;
-    /// use rust_drone_follow::model::lab_color::LabColor;
+    /// use rust_drone_follow::models::hat::Hat;
+    /// use rust_drone_follow::models::lab_color::LabColor;
     /// // ...
     /// # fn main() {
     ///    let hat = Hat::new(

@@ -31,7 +31,7 @@ pub fn get_mask(img: &Mat, lower_c: &LabColor, upper_c: &LabColor) -> Mat {
 
 /// Returns a vector of contours (VectorOfPoint) of objects from the picture that are between the
 /// given colors.
-pub fn get_contours(a: &Mat, lower_bound: &LabColor, upper_bound: &LabColor) -> cv::types::VectorOfVectorOfPoint {
+pub fn get_contours(a: &Mat, lower_bound: &LabColor, upper_bound: &LabColor) -> opencv::types::VectorOfVectorOfPoint {
     let mut hsv = mat_size_of_other(a);
     cvt_color(a, &mut hsv, COLOR_BGR2Lab, 0).unwrap();
 
@@ -43,7 +43,7 @@ pub fn get_contours(a: &Mat, lower_bound: &LabColor, upper_bound: &LabColor) -> 
     opencv::core::bitwise_and(&a, &a, &mut output, &mask).unwrap();
     opencv::imgproc::threshold(&mask, &mut thresh, 40.0, 255.0, 0).unwrap();
 
-    let mut contours: cv::types::VectorOfVectorOfPoint = cv::prelude::Vector::new();
+    let mut contours: opencv::types::VectorOfVectorOfPoint = opencv::prelude::Vector::new();
 
     opencv::imgproc::find_contours(&thresh, &mut contours,
                                opencv::imgproc::RETR_EXTERNAL,
