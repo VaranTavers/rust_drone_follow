@@ -43,7 +43,7 @@ pub fn get_contours(a: &Mat, lower_bound: &LabColor, upper_bound: &LabColor) -> 
     opencv::core::bitwise_and(&a, &a, &mut output, &mask).unwrap();
     opencv::imgproc::threshold(&mask, &mut thresh, 40.0, 255.0, 0).unwrap();
 
-    let mut contours: opencv::types::VectorOfVectorOfPoint = opencv::prelude::Vector::new();
+    let mut contours: opencv::types::VectorOfVectorOfPoint = Vector::new();
 
     opencv::imgproc::find_contours(&thresh, &mut contours,
                                opencv::imgproc::RETR_EXTERNAL,
