@@ -132,7 +132,7 @@ impl<D: Detector, C: Controller, F: Filter> HatFollower<D, C, F> {
         let min_change = self.settings.min_change;
 
         let (new_vx, new_vy) = self.calculate_new_vs();
-        let new_turn= if new_vx.abs() + new_vy.abs() < 0.0 || !self.settings.turn_only_when_centered {
+        let new_turn= if new_vx.abs() + new_vy.abs() < self.settings.turn_range {
                 self.calculate_new_turn()
             } else {
                 0.0
